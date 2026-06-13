@@ -54,27 +54,83 @@ function Asistente() {
     setText("");
   }
 
-  function toggleMic() {
+  async function toggleMic() {
     if (listening) {
-      recRef.current?.stop();
+      try { recRef.current?.stop(); } catch { /* ignore */ }
       setListening(false);
       return;
     }
     stopSpeaking();
-    const rec = getRecognition();
+
+    const rec = getRecognition({ interim: true });
     if (!rec) {
-      alert("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
+      const msg = "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge en Android, o escribe el mensaje.";
+      setMessages((m) => [...m, { id: Date.now(), from: "assistant", text: msg }]);
+      speak(msg);
       return;
     }
+
+    // Solicitar permiso de micrófono explícitamente (ayuda en Android/Chrome)
+    try {
+      if (navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((t) => t.stop());
+      }
+    } catch (err: any) {
+      const msg =
+        err?.name === "NotAllowedError"
+          ? "No tengo permiso para usar el micrófono. Actívalo en los ajustes del navegador e intenta de nuevo."
+          : err?.name === "NotFoundError"
+          ? "No encontré ningún micrófono conectado."
+          : "No pude acceder al micrófono. Intenta de nuevo.";
+      setMessages((m) => [...m, { id: Date.now(), from: "assistant", text: msg }]);
+      speak(msg);
+      return;
+    }
+
+    let finalTranscript = "";
     recRef.current = rec;
+
     rec.onresult = (e: any) => {
-      const transcript = e.results[0][0].transcript as string;
-      reply(transcript);
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const res = e.results[i];
+        if (res.isFinal) finalTranscript += res[0].transcript;
+      }
     };
-    rec.onend = () => setListening(false);
-    rec.onerror = () => setListening(false);
-    rec.start();
-    setListening(true);
+    rec.onend = () => {
+      setListening(false);
+      const t = finalTranscript.trim();
+      if (t) reply(t);
+    };
+    rec.onerror = (e: any) => {
+      setListening(false);
+      const code = e?.error as string | undefined;
+      let msg = "";
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        msg = "El navegador bloqueó el micrófono. Otorga el permiso e intenta de nuevo.";
+      } else if (code === "no-speech") {
+        msg = "No te escuché. Toca el micrófono e intenta hablar otra vez.";
+      } else if (code === "audio-capture") {
+        msg = "No detecté un micrófono. Conecta uno e intenta de nuevo.";
+      } else if (code === "network") {
+        msg = "Hubo un problema de red al reconocer la voz. Revisa tu conexión.";
+      }
+      if (msg) {
+        setMessages((m) => [...m, { id: Date.now(), from: "assistant", text: msg }]);
+        speak(msg);
+      }
+    };
+
+    try {
+      rec.start();
+      setListening(true);
+    } catch (err) {
+      console.error("rec.start failed", err);
+      setListening(false);
+      const msg = "No pude iniciar el micrófono. Intenta de nuevo en unos segundos.";
+      setMessages((m) => [...m, { id: Date.now(), from: "assistant", text: msg }]);
+      speak(msg);
+    }
   }
 
   return (
