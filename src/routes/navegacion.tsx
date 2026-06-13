@@ -92,10 +92,19 @@ function Nav() {
     <AppShell title="Navegación" back>
       <div className="bg-purple px-5 py-6 text-purple-foreground">
         <p className="text-xs uppercase tracking-wide opacity-80">Ruta activa hacia {target.title}</p>
-        <p className="mt-1 text-3xl font-extrabold leading-tight sm:text-4xl">{indicacion}</p>
+        <p
+          aria-live="assertive"
+          aria-atomic="true"
+          className="mt-1 text-3xl font-extrabold leading-tight sm:text-4xl"
+        >
+          {indicacion}
+        </p>
       </div>
 
-      <div className="relative h-[45vh] w-full overflow-hidden bg-gradient-to-br from-navy/10 via-purple/5 to-navy/20">
+      <div
+        aria-hidden="true"
+        className="relative h-[45vh] w-full overflow-hidden bg-gradient-to-br from-navy/10 via-purple/5 to-navy/20"
+      >
         <div
           className="absolute inset-0 opacity-40"
           style={{
@@ -122,8 +131,12 @@ function Nav() {
       </div>
 
       <div className="mx-auto max-w-3xl px-5 py-6">
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm">
-          <MapPin className="h-4 w-4 text-purple" />
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm"
+        >
+          <MapPin className="h-4 w-4 text-purple" aria-hidden="true" />
           {geo.loading && <span>Obteniendo ubicación GPS…</span>}
           {geo.error && <span className="text-destructive">{geo.error}</span>}
           {geo.coords && (
@@ -135,28 +148,45 @@ function Nav() {
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">Distancia restante</p>
-            <p className="mt-1 text-2xl font-bold">{distance ? formatDistance(distance) : "—"}</p>
+            <p
+              aria-label={
+                distance
+                  ? `Distancia restante: ${formatDistance(distance)}`
+                  : "Distancia restante desconocida"
+              }
+              className="mt-1 text-2xl font-bold"
+            >
+              {distance ? formatDistance(distance) : "—"}
+            </p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">Tiempo estimado</p>
-            <p className="mt-1 text-2xl font-bold">{eta ? `${eta} min` : "—"}</p>
+            <p
+              aria-label={eta ? `Tiempo estimado: ${eta} minutos` : "Tiempo estimado desconocido"}
+              className="mt-1 text-2xl font-bold"
+            >
+              {eta ? `${eta} min` : "—"}
+            </p>
           </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <button
             onClick={repetir}
+            aria-label="Repetir indicación de navegación en voz alta"
             className="flex items-center justify-center gap-2 rounded-xl border-2 border-purple py-4 font-semibold text-purple hover:bg-purple/5"
           >
-            <Volume2 className="h-5 w-5" /> Repetir indicación
+            <Volume2 className="h-5 w-5" aria-hidden="true" /> Repetir indicación
           </button>
           <button
             onClick={detener}
+            aria-label="Detener la lectura de la indicación"
             className="flex items-center justify-center gap-2 rounded-xl bg-destructive py-4 font-semibold text-destructive-foreground hover:bg-destructive/90"
           >
-            <X className="h-5 w-5" /> Detener
+            <X className="h-5 w-5" aria-hidden="true" /> Detener
           </button>
         </div>
       </div>
     </AppShell>
   );
 }
+

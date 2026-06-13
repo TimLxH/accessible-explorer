@@ -13,17 +13,25 @@ export const Route = createFileRoute("/")({
 });
 
 function Welcome() {
+  function escuchar() {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(
+      "Bienvenido a Puriy Ayni, tu asistente de viaje accesible. Descubre lugares accesibles, con guía de voz y rutas pensadas para todos. Toca el botón de iniciar sesión para entrar a tu cuenta, o el botón de registrarse para crear una nueva.",
+    );
+    u.lang = "es-ES";
+    window.speechSynthesis.speak(u);
+  }
   return (
-    <div className="flex min-h-screen flex-col bg-navy text-navy-foreground">
+    <div className="flex min-h-dvh flex-col bg-navy text-navy-foreground">
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
         <div
-          role="img"
-          aria-label="Logo de Puriy Ayni. Tu asistente de viaje accesible."
+          aria-hidden="true"
           className="relative mb-8 grid h-48 w-48 place-items-center overflow-hidden rounded-full bg-white/10 shadow-lg ring-2 ring-white/20 backdrop-blur-sm"
         >
           <img
             src={logo.url}
-            alt="Puriy Ayni — Tu asistente de viaje accesible"
+            alt=""
             className="h-40 w-40 object-contain"
           />
         </div>
@@ -40,14 +48,14 @@ function Welcome() {
         <div className="flex w-full max-w-sm flex-col gap-3">
           <Link
             to="/login"
-            aria-label="Iniciar sesión en tu cuenta"
+            aria-label="Iniciar sesión: ir a la pantalla de inicio de sesión"
             className="rounded-xl bg-purple px-6 py-4 text-base font-semibold text-purple-foreground shadow-lg transition-colors hover:bg-purple/90"
           >
             Iniciar sesión
           </Link>
           <Link
             to="/register"
-            aria-label="Registrarse para crear una cuenta nueva"
+            aria-label="Registrarse: ir a la pantalla de creación de cuenta"
             className="rounded-xl border-2 border-white/30 bg-white/5 px-6 py-4 text-base font-semibold text-white backdrop-blur transition-colors hover:bg-white/10"
           >
             Registrarse
@@ -55,6 +63,8 @@ function Welcome() {
         </div>
       </div>
       <button
+        type="button"
+        onClick={escuchar}
         aria-label="Escuchar descripción de la pantalla de bienvenida"
         className="flex items-center justify-center gap-3 border-t border-white/10 bg-navy px-4 py-4 text-white/90 hover:bg-white/5"
       >
@@ -64,3 +74,4 @@ function Welcome() {
     </div>
   );
 }
+

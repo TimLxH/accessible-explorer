@@ -159,13 +159,21 @@ function Home() {
           </div>
           <button
             onClick={startVoiceMenu}
+            aria-label={
+              status === "idle"
+                ? "Activar menú por voz: lee las opciones y escucha tu elección"
+                : status === "reading"
+                  ? "Leyendo opciones. Toca para cancelar"
+                  : "Escuchando tu voz. Toca para cancelar"
+            }
+            aria-pressed={status !== "idle"}
             className={`flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold shadow-md transition-colors ${
               status === "idle"
                 ? "bg-purple text-purple-foreground hover:bg-purple/90"
                 : "bg-destructive text-destructive-foreground"
             }`}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-5 w-5" aria-hidden="true" />
             {status === "idle"
               ? "Menú por voz"
               : status === "reading"
@@ -177,33 +185,39 @@ function Home() {
         {feedback && (
           <div
             role="status"
+            aria-live="polite"
             className="mb-5 rounded-xl border border-purple/30 bg-purple/5 px-4 py-3 text-sm text-purple"
           >
             {feedback}
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {tiles.map((t, i) => {
-            const TileIcon = t.icon;
-            return (
-              <Link
-                key={t.to}
-                to={t.to}
-                className="group flex aspect-square flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-card p-5 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
-              >
-                <div className={`grid h-16 w-16 place-items-center rounded-2xl ${t.color} transition-transform group-hover:scale-110`}>
-                  <TileIcon className="h-8 w-8" />
-                </div>
-                <span className="text-sm font-semibold leading-tight text-foreground sm:text-base">
-                  <span className="mr-1 text-muted-foreground">{i + 1}.</span>
-                  {t.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        <nav aria-label="Secciones principales">
+          <ul className="grid list-none grid-cols-2 gap-4 p-0 sm:grid-cols-3">
+            {tiles.map((t, i) => {
+              const TileIcon = t.icon;
+              return (
+                <li key={t.to}>
+                  <Link
+                    to={t.to}
+                    aria-label={`Opción ${i + 1}: ${t.spoken}. Ir a esta sección`}
+                    className="group flex aspect-square flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-card p-5 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                  >
+                    <div className={`grid h-16 w-16 place-items-center rounded-2xl ${t.color} transition-transform group-hover:scale-110`}>
+                      <TileIcon className="h-8 w-8" aria-hidden="true" />
+                    </div>
+                    <span className="text-sm font-semibold leading-tight text-foreground sm:text-base">
+                      <span aria-hidden="true" className="mr-1 text-muted-foreground">{i + 1}.</span>
+                      {t.label}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </div>
     </AppShell>
   );
 }
+

@@ -46,13 +46,15 @@ export function ListenBar({
       type="button"
       onClick={toggle}
       disabled={!supported}
+      aria-pressed={speaking}
       className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-center gap-3 border-t border-border bg-navy px-4 py-3 text-navy-foreground shadow-lg transition-colors hover:bg-navy/90 disabled:opacity-60"
-      aria-label={label}
+      aria-label={speaking ? "Detener lectura en voz alta" : label}
     >
-      {speaking ? <Square className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+      {speaking ? <Square className="h-5 w-5" aria-hidden="true" /> : <Volume2 className="h-5 w-5" aria-hidden="true" />}
       <span className="text-sm font-medium">
         {!supported ? "Voz no soportada" : speaking ? "Detener lectura" : label}
       </span>
     </button>
   );
+
 }
