@@ -9,38 +9,275 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as NavegacionRouteImport } from './routes/navegacion'
+import { Route as LugaresCercanosRouteImport } from './routes/lugares-cercanos'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as HistorialRouteImport } from './routes/historial'
+import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as ExplorarRouteImport } from './routes/explorar'
+import { Route as EmergenciaRouteImport } from './routes/emergencia'
+import { Route as ConfiguracionRouteImport } from './routes/configuracion'
+import { Route as AsistenteRouteImport } from './routes/asistente'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DetalleIdRouteImport } from './routes/detalle.$id'
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NavegacionRoute = NavegacionRouteImport.update({
+  id: '/navegacion',
+  path: '/navegacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LugaresCercanosRoute = LugaresCercanosRouteImport.update({
+  id: '/lugares-cercanos',
+  path: '/lugares-cercanos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistorialRoute = HistorialRouteImport.update({
+  id: '/historial',
+  path: '/historial',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritosRoute = FavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorarRoute = ExplorarRouteImport.update({
+  id: '/explorar',
+  path: '/explorar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmergenciaRoute = EmergenciaRouteImport.update({
+  id: '/emergencia',
+  path: '/emergencia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracionRoute = ConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AsistenteRoute = AsistenteRouteImport.update({
+  id: '/asistente',
+  path: '/asistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DetalleIdRoute = DetalleIdRouteImport.update({
+  id: '/detalle/$id',
+  path: '/detalle/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/asistente': typeof AsistenteRoute
+  '/configuracion': typeof ConfiguracionRoute
+  '/emergencia': typeof EmergenciaRoute
+  '/explorar': typeof ExplorarRoute
+  '/favoritos': typeof FavoritosRoute
+  '/historial': typeof HistorialRoute
+  '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
+  '/lugares-cercanos': typeof LugaresCercanosRoute
+  '/navegacion': typeof NavegacionRoute
+  '/register': typeof RegisterRoute
+  '/detalle/$id': typeof DetalleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/asistente': typeof AsistenteRoute
+  '/configuracion': typeof ConfiguracionRoute
+  '/emergencia': typeof EmergenciaRoute
+  '/explorar': typeof ExplorarRoute
+  '/favoritos': typeof FavoritosRoute
+  '/historial': typeof HistorialRoute
+  '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
+  '/lugares-cercanos': typeof LugaresCercanosRoute
+  '/navegacion': typeof NavegacionRoute
+  '/register': typeof RegisterRoute
+  '/detalle/$id': typeof DetalleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/asistente': typeof AsistenteRoute
+  '/configuracion': typeof ConfiguracionRoute
+  '/emergencia': typeof EmergenciaRoute
+  '/explorar': typeof ExplorarRoute
+  '/favoritos': typeof FavoritosRoute
+  '/historial': typeof HistorialRoute
+  '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
+  '/lugares-cercanos': typeof LugaresCercanosRoute
+  '/navegacion': typeof NavegacionRoute
+  '/register': typeof RegisterRoute
+  '/detalle/$id': typeof DetalleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/asistente'
+    | '/configuracion'
+    | '/emergencia'
+    | '/explorar'
+    | '/favoritos'
+    | '/historial'
+    | '/home'
+    | '/login'
+    | '/lugares-cercanos'
+    | '/navegacion'
+    | '/register'
+    | '/detalle/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/asistente'
+    | '/configuracion'
+    | '/emergencia'
+    | '/explorar'
+    | '/favoritos'
+    | '/historial'
+    | '/home'
+    | '/login'
+    | '/lugares-cercanos'
+    | '/navegacion'
+    | '/register'
+    | '/detalle/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/asistente'
+    | '/configuracion'
+    | '/emergencia'
+    | '/explorar'
+    | '/favoritos'
+    | '/historial'
+    | '/home'
+    | '/login'
+    | '/lugares-cercanos'
+    | '/navegacion'
+    | '/register'
+    | '/detalle/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AsistenteRoute: typeof AsistenteRoute
+  ConfiguracionRoute: typeof ConfiguracionRoute
+  EmergenciaRoute: typeof EmergenciaRoute
+  ExplorarRoute: typeof ExplorarRoute
+  FavoritosRoute: typeof FavoritosRoute
+  HistorialRoute: typeof HistorialRoute
+  HomeRoute: typeof HomeRoute
+  LoginRoute: typeof LoginRoute
+  LugaresCercanosRoute: typeof LugaresCercanosRoute
+  NavegacionRoute: typeof NavegacionRoute
+  RegisterRoute: typeof RegisterRoute
+  DetalleIdRoute: typeof DetalleIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/navegacion': {
+      id: '/navegacion'
+      path: '/navegacion'
+      fullPath: '/navegacion'
+      preLoaderRoute: typeof NavegacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lugares-cercanos': {
+      id: '/lugares-cercanos'
+      path: '/lugares-cercanos'
+      fullPath: '/lugares-cercanos'
+      preLoaderRoute: typeof LugaresCercanosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historial': {
+      id: '/historial'
+      path: '/historial'
+      fullPath: '/historial'
+      preLoaderRoute: typeof HistorialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favoritos': {
+      id: '/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof FavoritosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorar': {
+      id: '/explorar'
+      path: '/explorar'
+      fullPath: '/explorar'
+      preLoaderRoute: typeof ExplorarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/emergencia': {
+      id: '/emergencia'
+      path: '/emergencia'
+      fullPath: '/emergencia'
+      preLoaderRoute: typeof EmergenciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracion': {
+      id: '/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof ConfiguracionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/asistente': {
+      id: '/asistente'
+      path: '/asistente'
+      fullPath: '/asistente'
+      preLoaderRoute: typeof AsistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +285,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/detalle/$id': {
+      id: '/detalle/$id'
+      path: '/detalle/$id'
+      fullPath: '/detalle/$id'
+      preLoaderRoute: typeof DetalleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AsistenteRoute: AsistenteRoute,
+  ConfiguracionRoute: ConfiguracionRoute,
+  EmergenciaRoute: EmergenciaRoute,
+  ExplorarRoute: ExplorarRoute,
+  FavoritosRoute: FavoritosRoute,
+  HistorialRoute: HistorialRoute,
+  HomeRoute: HomeRoute,
+  LoginRoute: LoginRoute,
+  LugaresCercanosRoute: LugaresCercanosRoute,
+  NavegacionRoute: NavegacionRoute,
+  RegisterRoute: RegisterRoute,
+  DetalleIdRoute: DetalleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
