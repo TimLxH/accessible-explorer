@@ -22,14 +22,19 @@ export function stopSpeaking() {
 
 type SR = typeof window extends { SpeechRecognition: infer T } ? T : any;
 
-export function getRecognition(): any | null {
+export function getRecognition(opts?: {
+  interim?: boolean;
+  continuous?: boolean;
+}): any | null {
   if (typeof window === "undefined") return null;
   const Ctor =
     (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
   if (!Ctor) return null;
   const r = new Ctor();
   r.lang = "es-ES";
-  r.interimResults = false;
-  r.maxAlternatives = 1;
+  r.interimResults = opts?.interim ?? false;
+  r.continuous = opts?.continuous ?? false;
+  r.maxAlternatives = 3;
   return r;
 }
+
