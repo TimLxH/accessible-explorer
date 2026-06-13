@@ -19,12 +19,12 @@ function Welcome() {
         <div
           role="img"
           aria-label="Logo de Puriy Ayni. Tu asistente de viaje accesible."
-          className="relative mb-8 flex h-52 w-52 items-center justify-center rounded-3xl bg-white/10 p-4 shadow-lg ring-2 ring-white/20 backdrop-blur-sm"
+          className="relative mb-8 grid h-48 w-48 place-items-center overflow-hidden rounded-full bg-white/10 shadow-lg ring-2 ring-white/20 backdrop-blur-sm"
         >
           <img
             src={logo.url}
             alt="Puriy Ayni — Tu asistente de viaje accesible"
-            className="h-full w-full object-contain"
+            className="h-40 w-40 object-contain"
           />
         </div>
         <h1 className="mb-3 text-4xl font-extrabold leading-tight sm:text-5xl">
