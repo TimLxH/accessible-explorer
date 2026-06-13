@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { ListenBar } from "@/components/listen-bar";
+import { EmergencyBar } from "@/components/emergency-bar";
 import { getRecognition, stopSpeaking } from "@/lib/speech";
 
 export const Route = createFileRoute("/home")({
