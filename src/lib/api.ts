@@ -1,7 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-
-export const API_BASE =
-  (import.meta.env.VITE_API_BASE as string | undefined) ?? "http://127.0.0.1:8000/api";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Site = {
   id: string;
@@ -25,26 +23,77 @@ export type NearbyPoint = {
   coords: { lat: number; lng: number };
 };
 
-async function request<T>(path: string): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(`${API_BASE}${path}`, {
-      headers: { Accept: "application/json" },
-    });
-  } catch (err) {
-    throw new Error(
-      `No se pudo conectar con el servidor (${API_BASE}). Verifica que el backend de FastAPI esté encendido.`,
-    );
-  }
-  if (!res.ok) {
-    throw new Error(`Error ${res.status} al solicitar ${path}: ${res.statusText}`);
-  }
-  return (await res.json()) as T;
+type LugarRow = {
+  id: string;
+  title: string;
+  location: string;
+  distance: string;
+  category: string;
+  image: string;
+  description: string;
+  history: string;
+  info: string;
+  accessibility: string;
+  lat: number;
+  lng: number;
+};
+
+type CercanoRow = {
+  id: string;
+  title: string;
+  icon: string;
+  lat: number;
+  lng: number;
+};
+
+function mapLugar(r: LugarRow): Site {
+  return {
+    id: r.id,
+    title: r.title,
+    location: r.location,
+    distance: r.distance,
+    category: r.category,
+    image: r.image,
+    description: r.description,
+    history: r.history,
+    info: r.info,
+    accessibility: r.accessibility,
+    coords: { lat: r.lat, lng: r.lng },
+  };
 }
 
-export const fetchSites = () => request<Site[]>("/lugares");
-export const fetchSite = (id: string) => request<Site>(`/lugares/${encodeURIComponent(id)}`);
-export const fetchNearby = () => request<NearbyPoint[]>("/lugares-cercanos");
+export async function fetchSites(): Promise<Site[]> {
+  const { data, error } = await supabase
+    .from("lugares")
+    .select("*")
+    .order("title", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(mapLugar);
+}
+
+export async function fetchSite(id: string): Promise<Site> {
+  const { data, error } = await supabase
+    .from("lugares")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error(`Lugar no encontrado: ${id}`);
+  return mapLugar(data);
+}
+
+export async function fetchNearby(): Promise<NearbyPoint[]> {
+  const { data, error } = await supabase
+    .from("lugares_cercanos")
+    .select("*");
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r: CercanoRow) => ({
+    id: r.id,
+    title: r.title,
+    icon: r.icon,
+    coords: { lat: r.lat, lng: r.lng },
+  }));
+}
 
 export const sitesQuery = queryOptions({
   queryKey: ["sites"],
