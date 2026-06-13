@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navigation, Volume2, X } from "lucide-react";
+import { Navigation, Volume2, X, MapPin } from "lucide-react";
+import { useMemo } from "react";
 import { AppShell } from "@/components/app-shell";
+import { sites } from "@/lib/mock-data";
+import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geolocation";
+import { speak, stopSpeaking } from "@/lib/speech";
 
 export const Route = createFileRoute("/navegacion")({
   head: () => ({ meta: [{ title: "Navegación — Turismo Sin Barreras" }] }),
@@ -8,17 +12,36 @@ export const Route = createFileRoute("/navegacion")({
 });
 
 function Nav() {
+  const geo = useGeolocation(true);
+  const target = sites[0]; // Torre Torre as demo destination
+
+  const distance = useMemo(() => {
+    if (!geo.coords) return null;
+    return distanceMeters(geo.coords, target.coords);
+  }, [geo.coords, target]);
+
+  const eta = distance ? Math.max(1, Math.round(distance / 80)) : null; // ~80 m/min walking
+  const indicacion = distance
+    ? distance > 100
+      ? `Avanza recto ${Math.round(distance)} metros hacia ${target.title}`
+      : `Estás muy cerca de ${target.title}`
+    : "Obteniendo tu ubicación…";
+
+  function repetir() {
+    speak(indicacion);
+  }
+  function detener() {
+    stopSpeaking();
+  }
+
   return (
     <AppShell title="Navegación" back>
       <div className="bg-purple px-5 py-6 text-purple-foreground">
-        <p className="text-xs uppercase tracking-wide opacity-80">Ruta activa</p>
-        <p className="mt-1 text-3xl font-extrabold leading-tight sm:text-4xl">
-          Avanza recto 20 metros
-        </p>
+        <p className="text-xs uppercase tracking-wide opacity-80">Ruta activa hacia {target.title}</p>
+        <p className="mt-1 text-3xl font-extrabold leading-tight sm:text-4xl">{indicacion}</p>
       </div>
 
-      <div className="relative h-[55vh] w-full overflow-hidden bg-gradient-to-br from-navy/10 via-purple/5 to-navy/20">
-        {/* Fake grid map */}
+      <div className="relative h-[45vh] w-full overflow-hidden bg-gradient-to-br from-navy/10 via-purple/5 to-navy/20">
         <div
           className="absolute inset-0 opacity-40"
           style={{
@@ -27,7 +50,6 @@ function Nav() {
             backgroundSize: "40px 40px",
           }}
         />
-        {/* Route path */}
         <svg className="absolute inset-0 h-full w-full" viewBox="0 0 400 400" preserveAspectRatio="none">
           <path
             d="M 50 350 Q 150 300 180 220 T 280 120 L 340 60"
@@ -37,7 +59,6 @@ function Nav() {
             fill="none"
           />
         </svg>
-        {/* Marker */}
         <div className="absolute left-[12%] top-[85%] grid h-8 w-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-purple text-purple-foreground shadow-lg ring-4 ring-purple/30">
           <div className="h-2 w-2 rounded-full bg-white" />
         </div>
@@ -47,21 +68,37 @@ function Nav() {
       </div>
 
       <div className="mx-auto max-w-3xl px-5 py-6">
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm">
+          <MapPin className="h-4 w-4 text-purple" />
+          {geo.loading && <span>Obteniendo ubicación GPS…</span>}
+          {geo.error && <span className="text-destructive">{geo.error}</span>}
+          {geo.coords && (
+            <span className="text-muted-foreground">
+              {geo.coords.lat.toFixed(5)}, {geo.coords.lng.toFixed(5)} · ±{Math.round(geo.coords.accuracy)} m
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">Distancia restante</p>
-            <p className="mt-1 text-2xl font-bold">320 m</p>
+            <p className="mt-1 text-2xl font-bold">{distance ? formatDistance(distance) : "—"}</p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">Tiempo estimado</p>
-            <p className="mt-1 text-2xl font-bold">5 min</p>
+            <p className="mt-1 text-2xl font-bold">{eta ? `${eta} min` : "—"}</p>
           </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <button className="flex items-center justify-center gap-2 rounded-xl border-2 border-purple py-4 font-semibold text-purple hover:bg-purple/5">
+          <button
+            onClick={repetir}
+            className="flex items-center justify-center gap-2 rounded-xl border-2 border-purple py-4 font-semibold text-purple hover:bg-purple/5"
+          >
             <Volume2 className="h-5 w-5" /> Repetir indicación
           </button>
-          <button className="flex items-center justify-center gap-2 rounded-xl bg-destructive py-4 font-semibold text-destructive-foreground hover:bg-destructive/90">
+          <button
+            onClick={detener}
+            className="flex items-center justify-center gap-2 rounded-xl bg-destructive py-4 font-semibold text-destructive-foreground hover:bg-destructive/90"
+          >
             <X className="h-5 w-5" /> Detener
           </button>
         </div>
