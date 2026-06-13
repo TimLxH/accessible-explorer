@@ -45,7 +45,13 @@ function Detalle() {
   const { id } = Route.useParams();
   const site = sites.find((s) => s.id === id);
   const [fav, setFav] = useState(site?.favorite ?? false);
+  const navigate = useNavigate();
   if (!site) throw notFound();
+
+  function iniciarRecorrido() {
+    speak(`Iniciando recorrido hacia ${site!.title}`);
+    navigate({ to: "/navegacion", search: { dest: site!.id } });
+  }
 
   return (
     <AppShell title={site.title} back>
@@ -88,7 +94,10 @@ function Detalle() {
           >
             <Volume2 className="h-5 w-5" /> Escuchar descripción
           </button>
-          <button className="flex items-center justify-center gap-2 rounded-xl bg-purple py-4 font-semibold text-purple-foreground shadow hover:bg-purple/90">
+          <button
+            onClick={iniciarRecorrido}
+            className="flex items-center justify-center gap-2 rounded-xl bg-purple py-4 font-semibold text-purple-foreground shadow hover:bg-purple/90"
+          >
             <Navigation className="h-5 w-5" /> Iniciar recorrido
           </button>
         </div>
