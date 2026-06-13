@@ -10,6 +10,7 @@ export type Site = {
   info: string;
   accessibility: string;
   favorite?: boolean;
+  coords: { lat: number; lng: number };
 };
 
 export const sites: Site[] = [
@@ -29,6 +30,7 @@ export const sites: Site[] = [
     accessibility:
       "Nivel medio. Senderos de tierra compactada. Se recomienda calzado adecuado. Disponibilidad parcial para sillas de ruedas en el mirador inicial.",
     favorite: true,
+    coords: { lat: -12.0432, lng: -75.1788 },
   },
   {
     id: "laguna-paca",
@@ -45,6 +47,7 @@ export const sites: Site[] = [
     info: "Altitud: 3,418 msnm. Servicios: restaurantes, paseos en bote, mirador.",
     accessibility: "Nivel alto. Caminos pavimentados, rampas en muelle principal.",
     favorite: true,
+    coords: { lat: -11.7833, lng: -75.5 },
   },
   {
     id: "convento-ocopa",
@@ -60,6 +63,7 @@ export const sites: Site[] = [
       "Fundado en 1725 por los franciscanos como centro de evangelización de la selva central peruana.",
     info: "Horario: 9:00 - 17:00. Visitas guiadas disponibles.",
     accessibility: "Nivel medio. Algunos desniveles en patios coloniales.",
+    coords: { lat: -11.9136, lng: -75.3133 },
   },
   {
     id: "nevado-huaytapallana",
@@ -75,15 +79,18 @@ export const sites: Site[] = [
       "Considerado apu sagrado por las comunidades andinas, escenario de rituales ancestrales aún vigentes.",
     info: "Altitud: 5,557 msnm. Requiere aclimatación previa.",
     accessibility: "Nivel bajo. Terreno montañoso, no apto para movilidad reducida.",
+    coords: { lat: -11.9333, lng: -75.05 },
   },
 ];
 
+// Relative offsets (in degrees) applied to user's current position so the list
+// always shows points "near" wherever the user actually is.
 export const nearby = [
-  { id: "n1", title: "Mirador del valle", icon: "eye", distance: "120 m" },
-  { id: "n2", title: "Servicios higiénicos", icon: "bath", distance: "200 m" },
-  { id: "n3", title: "Restaurante La Cabaña", icon: "utensils", distance: "350 m" },
-  { id: "n4", title: "Punto de información", icon: "info", distance: "410 m" },
-  { id: "n5", title: "Parada de bus", icon: "bus", distance: "600 m" },
+  { id: "n1", title: "Mirador del valle", icon: "eye", offset: { lat: 0.0008, lng: 0.0006 } },
+  { id: "n2", title: "Servicios higiénicos", icon: "bath", offset: { lat: -0.0012, lng: 0.001 } },
+  { id: "n3", title: "Restaurante La Cabaña", icon: "utensils", offset: { lat: 0.002, lng: -0.0015 } },
+  { id: "n4", title: "Punto de información", icon: "info", offset: { lat: -0.0025, lng: -0.002 } },
+  { id: "n5", title: "Parada de bus", icon: "bus", offset: { lat: 0.004, lng: 0.0035 } },
 ];
 
 export const history = [

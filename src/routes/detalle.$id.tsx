@@ -77,7 +77,14 @@ function Detalle() {
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <button className="flex items-center justify-center gap-2 rounded-xl border-2 border-purple bg-white py-4 font-semibold text-purple hover:bg-purple/5">
+          <button
+            onClick={() =>
+              import("@/lib/speech").then((m) =>
+                m.speak(`${site.title}. ${site.description} ${site.accessibility}`),
+              )
+            }
+            className="flex items-center justify-center gap-2 rounded-xl border-2 border-purple bg-white py-4 font-semibold text-purple hover:bg-purple/5"
+          >
             <Volume2 className="h-5 w-5" /> Escuchar descripción
           </button>
           <button className="flex items-center justify-center gap-2 rounded-xl bg-purple py-4 font-semibold text-purple-foreground shadow hover:bg-purple/90">
