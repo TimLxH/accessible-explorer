@@ -30,8 +30,11 @@ function Explorar() {
       <div className="mx-auto max-w-5xl px-5 py-6">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <label htmlFor="search-input" className="sr-only">Buscar destino por nombre</label>
             <input
+              id="search-input"
+              type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Buscar destino..."
@@ -39,7 +42,9 @@ function Explorar() {
             />
           </div>
           <div className="relative sm:w-56">
+            <label htmlFor="category-select" className="sr-only">Filtrar por categoría</label>
             <select
+              id="category-select"
               value={cat}
               onChange={(e) => setCat(e.target.value)}
               className="w-full appearance-none rounded-xl border border-input bg-card px-4 py-3 pr-10 outline-none focus:border-purple"
@@ -48,9 +53,10 @@ function Explorar() {
                 <option key={c}>{c}</option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
+
 
         {isLoading && (
           <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-6 text-muted-foreground">
@@ -59,19 +65,21 @@ function Explorar() {
         )}
 
         {isError && (
-          <div className="rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-4 text-sm text-destructive">
+          <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-4 text-sm text-destructive">
             <div className="flex items-center gap-2 font-semibold">
-              <AlertTriangle className="h-5 w-5" /> No se pudieron cargar los lugares
+              <AlertTriangle className="h-5 w-5" aria-hidden="true" /> No se pudieron cargar los lugares
             </div>
             <p className="mt-1">{(error as Error)?.message}</p>
             <button
               onClick={() => refetch()}
+              aria-label="Reintentar la carga de lugares"
               className="mt-3 inline-flex items-center gap-2 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90"
             >
               Reintentar
             </button>
           </div>
         )}
+
 
         {!isLoading && !isError && (
           <>

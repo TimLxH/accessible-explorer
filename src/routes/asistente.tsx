@@ -70,10 +70,17 @@ function Asistente() {
   return (
     <AppShell title="Asistente virtual" back bottomBar={<EmergencyBar />}>
       <div className="mx-auto flex max-w-2xl flex-col px-4 py-6">
-        <div className="flex flex-col gap-3 pb-32">
+        <div
+          role="log"
+          aria-live="polite"
+          aria-atomic="false"
+          aria-label="Conversación con el asistente"
+          className="flex flex-col gap-3 pb-32"
+        >
           {messages.map((m) => (
             <div
               key={m.id}
+              aria-label={m.from === "user" ? `Tú dijiste: ${m.text}` : `Asistente: ${m.text}`}
               className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                 m.from === "user"
                   ? "ml-auto rounded-br-md bg-purple text-purple-foreground"
@@ -84,27 +91,38 @@ function Asistente() {
             </div>
           ))}
           {listening && (
-            <div className="mr-auto rounded-2xl border border-purple/40 bg-purple/5 px-4 py-3 text-sm text-purple">
+            <div
+              role="status"
+              aria-live="polite"
+              className="mr-auto rounded-2xl border border-purple/40 bg-purple/5 px-4 py-3 text-sm text-purple"
+            >
               Escuchando…
             </div>
           )}
         </div>
       </div>
-      <form onSubmit={send} className="fixed inset-x-0 bottom-14 z-30 border-t border-border bg-card p-3">
+      <form
+        onSubmit={send}
+        aria-label="Enviar mensaje al asistente"
+        className="fixed inset-x-0 bottom-14 z-30 border-t border-border bg-card p-3"
+      >
         <div className="mx-auto flex max-w-2xl items-center gap-2">
           <button
             type="button"
             onClick={toggleMic}
-            aria-label={listening ? "Detener" : "Hablar"}
-            className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${
+            aria-label={listening ? "Detener reconocimiento de voz" : "Activar micrófono para dictar tu mensaje"}
+            aria-pressed={listening}
+            className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${
               listening
                 ? "bg-destructive text-destructive-foreground"
                 : "bg-accent text-accent-foreground hover:bg-accent/80"
             }`}
           >
-            {listening ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            {listening ? <Square className="h-5 w-5" aria-hidden="true" /> : <Mic className="h-5 w-5" aria-hidden="true" />}
           </button>
+          <label htmlFor="chat-input" className="sr-only">Escribe un mensaje al asistente</label>
           <input
+            id="chat-input"
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Escribe o habla..."
@@ -112,13 +130,14 @@ function Asistente() {
           />
           <button
             type="submit"
-            aria-label="Enviar"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-purple text-purple-foreground hover:bg-purple/90"
+            aria-label="Enviar mensaje al asistente"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-purple text-purple-foreground hover:bg-purple/90"
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
       </form>
     </AppShell>
   );
 }
+
