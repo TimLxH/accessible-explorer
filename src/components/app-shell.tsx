@@ -49,7 +49,7 @@ export function AppShell({
             </button>
           )}
           <Link to="/home" className="hidden text-base font-bold tracking-tight lg:block">
-            Turismo Sin Barreras
+            Puriy Ayni
           </Link>
         </div>
         <h1 className="truncate text-center text-base font-semibold lg:text-left">
