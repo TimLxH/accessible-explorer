@@ -15,7 +15,7 @@ import { EmergencyBar } from "@/components/emergency-bar";
 import { getRecognition, stopSpeaking } from "@/lib/speech";
 
 export const Route = createFileRoute("/home")({
-  head: () => ({ meta: [{ title: "Inicio — Turismo Sin Barreras" }] }),
+  head: () => ({ meta: [{ title: "Inicio — Puriy Ayni" }] }),
   component: Home,
 });
 
