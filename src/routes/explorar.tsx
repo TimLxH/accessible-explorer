@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, ChevronDown, AlertTriangle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { ListenBar } from "@/components/listen-bar";
+import { EmergencyBar } from "@/components/emergency-bar";
 import { SiteCard } from "@/components/site-card";
 import { sitesQuery } from "@/lib/api";
 
@@ -26,7 +26,7 @@ function Explorar() {
   );
 
   return (
-    <AppShell title="Explorar" back bottomBar={<ListenBar label="Escuchar lista" />}>
+    <AppShell title="Explorar" back bottomBar={<EmergencyBar />}>
       <div className="mx-auto max-w-5xl px-5 py-6">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">

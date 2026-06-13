@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { ListenBar } from "@/components/listen-bar";
+import { EmergencyBar } from "@/components/emergency-bar";
 import { useAuth } from "@/hooks/use-auth";
 import { useHistory } from "@/hooks/use-history";
 
@@ -15,7 +15,7 @@ function History() {
   const { data, isLoading, isError, error } = useHistory();
 
   return (
-    <AppShell title="Historial" back bottomBar={<ListenBar />}>
+    <AppShell title="Historial" back bottomBar={<EmergencyBar />}>
       <div className="mx-auto max-w-2xl px-5 py-6">
         {loading && (
           <p className="text-muted-foreground"><Loader2 className="inline h-5 w-5 animate-spin" /> Cargando…</p>

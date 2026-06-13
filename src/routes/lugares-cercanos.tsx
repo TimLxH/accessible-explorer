@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Eye, Bath, Utensils, Info, Bus, MapPin, AlertTriangle, Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { AppShell } from "@/components/app-shell";
-import { ListenBar } from "@/components/listen-bar";
+import { EmergencyBar } from "@/components/emergency-bar";
 import { nearbyQuery } from "@/lib/api";
 import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geolocation";
 
@@ -36,7 +36,7 @@ function Cercanos() {
   }, [data, geo.coords]);
 
   return (
-    <AppShell title="Lugares cercanos" back bottomBar={<ListenBar label="Escuchar lista" />}>
+    <AppShell title="Lugares cercanos" back bottomBar={<EmergencyBar />}>
       <div className="mx-auto max-w-3xl px-5 py-6">
         <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm">
           <MapPin className="h-4 w-4 text-purple" />
