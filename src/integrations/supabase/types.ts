@@ -14,7 +14,142 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favoritos: {
+        Row: {
+          created_at: string
+          id: string
+          lugar_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lugar_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lugar_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favoritos_lugar_id_fkey"
+            columns: ["lugar_id"]
+            isOneToOne: false
+            referencedRelation: "lugares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      historial: {
+        Row: {
+          id: string
+          lugar_id: string
+          user_id: string
+          visited_at: string
+        }
+        Insert: {
+          id?: string
+          lugar_id: string
+          user_id: string
+          visited_at?: string
+        }
+        Update: {
+          id?: string
+          lugar_id?: string
+          user_id?: string
+          visited_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historial_lugar_id_fkey"
+            columns: ["lugar_id"]
+            isOneToOne: false
+            referencedRelation: "lugares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lugares: {
+        Row: {
+          accessibility: string
+          category: string
+          created_at: string
+          description: string
+          distance: string
+          history: string
+          id: string
+          image: string
+          info: string
+          lat: number
+          lng: number
+          location: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          accessibility?: string
+          category?: string
+          created_at?: string
+          description?: string
+          distance?: string
+          history?: string
+          id: string
+          image?: string
+          info?: string
+          lat?: number
+          lng?: number
+          location?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          accessibility?: string
+          category?: string
+          created_at?: string
+          description?: string
+          distance?: string
+          history?: string
+          id?: string
+          image?: string
+          info?: string
+          lat?: number
+          lng?: number
+          location?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lugares_cercanos: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          lat: number
+          lng: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id: string
+          lat?: number
+          lng?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          lat?: number
+          lng?: number
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
