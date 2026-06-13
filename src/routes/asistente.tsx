@@ -109,6 +109,16 @@ function Asistente() {
               Escuchando…
             </div>
           )}
+          {thinking && (
+            <div
+              role="status"
+              aria-live="polite"
+              className="mr-auto rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground"
+            >
+              Pensando…
+            </div>
+          )}
+
         </div>
       </div>
       <form
