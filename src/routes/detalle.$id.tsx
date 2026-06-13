@@ -158,6 +158,15 @@ function Detalle() {
             <Navigation className="h-5 w-5" aria-hidden="true" /> Iniciar recorrido
           </button>
         </div>
+
+        <Link
+          to="/recorrido/$id"
+          params={{ id: site.id }}
+          aria-label={`Ingresar al lugar ${site.title} y comenzar el recorrido interactivo guiado por voz`}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-navy py-5 text-lg font-bold text-navy-foreground shadow-lg hover:bg-navy/90 focus:outline-none focus:ring-4 focus:ring-purple/40"
+        >
+          Ingresar al lugar
+        </Link>
       </div>
     </AppShell>
   );

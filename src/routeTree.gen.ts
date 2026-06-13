@@ -22,6 +22,7 @@ import { Route as EmergenciaRouteImport } from './routes/emergencia'
 import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as AsistenteRouteImport } from './routes/asistente'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RecorridoIdRouteImport } from './routes/recorrido.$id'
 import { Route as DetalleIdRouteImport } from './routes/detalle.$id'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -89,6 +90,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecorridoIdRoute = RecorridoIdRouteImport.update({
+  id: '/recorrido/$id',
+  path: '/recorrido/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DetalleIdRoute = DetalleIdRouteImport.update({
   id: '/detalle/$id',
   path: '/detalle/$id',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/navegacion': typeof NavegacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
+  '/recorrido/$id': typeof RecorridoIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/navegacion': typeof NavegacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
+  '/recorrido/$id': typeof RecorridoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/navegacion': typeof NavegacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
+  '/recorrido/$id': typeof RecorridoIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/navegacion'
     | '/register'
     | '/detalle/$id'
+    | '/recorrido/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/navegacion'
     | '/register'
     | '/detalle/$id'
+    | '/recorrido/$id'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/navegacion'
     | '/register'
     | '/detalle/$id'
+    | '/recorrido/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -210,6 +222,7 @@ export interface RootRouteChildren {
   NavegacionRoute: typeof NavegacionRoute
   RegisterRoute: typeof RegisterRoute
   DetalleIdRoute: typeof DetalleIdRoute
+  RecorridoIdRoute: typeof RecorridoIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recorrido/$id': {
+      id: '/recorrido/$id'
+      path: '/recorrido/$id'
+      fullPath: '/recorrido/$id'
+      preLoaderRoute: typeof RecorridoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/detalle/$id': {
       id: '/detalle/$id'
       path: '/detalle/$id'
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   NavegacionRoute: NavegacionRoute,
   RegisterRoute: RegisterRoute,
   DetalleIdRoute: DetalleIdRoute,
+  RecorridoIdRoute: RecorridoIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
