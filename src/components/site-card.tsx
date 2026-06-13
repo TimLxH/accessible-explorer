@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, MapPin } from "lucide-react";
-import type { Site } from "@/lib/mock-data";
+import type { Site } from "@/lib/api";
 
 export function SiteCard({ site }: { site: Site }) {
   return (
