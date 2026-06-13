@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Loader2, Heart } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { ListenBar } from "@/components/listen-bar";
+import { EmergencyBar } from "@/components/emergency-bar";
 import { SiteCard } from "@/components/site-card";
 import { sitesQuery } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,7 +52,7 @@ function Favoritos() {
   const busy = isLoading || favLoading;
 
   return (
-    <AppShell title="Favoritos" back bottomBar={<ListenBar label="Escuchar lista" />}>
+    <AppShell title="Favoritos" back bottomBar={<EmergencyBar />}>
       <div className="mx-auto max-w-5xl px-5 py-6">
         {busy && (
           <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-6 text-muted-foreground">

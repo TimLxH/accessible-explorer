@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mic, Send, Square } from "lucide-react";
 import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { ListenBar } from "@/components/listen-bar";
+import { EmergencyBar } from "@/components/emergency-bar";
 import { chat as initial } from "@/lib/mock-data";
 import { getRecognition, speak, stopSpeaking } from "@/lib/speech";
 
@@ -68,7 +68,7 @@ function Asistente() {
   }
 
   return (
-    <AppShell title="Asistente virtual" back bottomBar={<ListenBar label="Escuchar conversación" />}>
+    <AppShell title="Asistente virtual" back bottomBar={<EmergencyBar />}>
       <div className="mx-auto flex max-w-2xl flex-col px-4 py-6">
         <div className="flex flex-col gap-3 pb-32">
           {messages.map((m) => (
