@@ -88,7 +88,7 @@ function Home() {
       return;
     }
 
-    const rec = getRecognition();
+    const rec = getRecognition({ interim: true, continuous: true });
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       return;
@@ -103,35 +103,48 @@ function Home() {
 
     speakSequence([intro, ...numbered, outro], () => {
       setStatus("listening");
-      setFeedback("Escuchando tu elección…");
+      setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
+      let decided = false;
+
       rec.onresult = (e: any) => {
-        const transcript: string = e.results[0][0].transcript;
+        let combined = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          combined += e.results[i][0].transcript + " ";
+        }
+        const transcript = combined.trim();
+        if (transcript) setFeedback(`Te escuché: "${transcript}"`);
         const tile = matchTile(transcript);
-        if (tile) {
+        if (tile && !decided) {
+          decided = true;
           setFeedback(`Abriendo: ${tile.spoken}`);
+          try { rec.stop(); } catch { /* ignore */ }
           speakSequence([`Abriendo ${tile.spoken}`], () => {});
           navigate({ to: tile.to });
+        }
+      };
+      rec.onerror = (e: any) => {
+        if (e?.error === "no-speech") {
+          setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
+        } else if (e?.error === "not-allowed") {
+          setFeedback("Permiso de micrófono denegado. Habilítalo en tu navegador.");
         } else {
-          setFeedback(`No reconocí "${transcript}". Intenta de nuevo.`);
-          speakSequence(["No reconocí tu elección. Intenta de nuevo."], () => {});
+          setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
         }
         setStatus("idle");
       };
-      rec.onerror = () => {
-        setStatus("idle");
-        setFeedback("No pude escucharte. Intenta de nuevo.");
-      };
       rec.onend = () => {
-        setStatus((s) => (s === "listening" ? "idle" : s));
+        setStatus("idle");
       };
       recRef.current = rec;
       try {
         rec.start();
-      } catch {
+      } catch (err) {
         setStatus("idle");
+        setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
       }
     });
   }
+
 
   const btnIcon = status === "idle" ? Volume2 : Square;
   const Icon = btnIcon;
