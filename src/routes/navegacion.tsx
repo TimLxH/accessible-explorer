@@ -6,14 +6,20 @@ import { sites } from "@/lib/mock-data";
 import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geolocation";
 import { speak, stopSpeaking } from "@/lib/speech";
 
+type NavSearch = { dest?: string };
+
 export const Route = createFileRoute("/navegacion")({
+  validateSearch: (s: Record<string, unknown>): NavSearch => ({
+    dest: typeof s.dest === "string" ? s.dest : undefined,
+  }),
   head: () => ({ meta: [{ title: "Navegación — Turismo Sin Barreras" }] }),
   component: Nav,
 });
 
 function Nav() {
   const geo = useGeolocation(true);
-  const target = sites[0]; // Torre Torre as demo destination
+  const { dest } = Route.useSearch();
+  const target = sites.find((s) => s.id === dest) ?? sites[0];
 
   const distance = useMemo(() => {
     if (!geo.coords) return null;
