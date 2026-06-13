@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navigation, Volume2, X, MapPin } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Navigation, Volume2, X, MapPin, Loader2, AlertTriangle } from "lucide-react";
 import { useMemo } from "react";
 import { AppShell } from "@/components/app-shell";
-import { sites } from "@/lib/mock-data";
+import { siteQuery } from "@/lib/api";
 import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geolocation";
 import { speak, stopSpeaking } from "@/lib/speech";
 
@@ -19,25 +20,72 @@ export const Route = createFileRoute("/navegacion")({
 function Nav() {
   const geo = useGeolocation(true);
   const { dest } = Route.useSearch();
-  const target = sites.find((s) => s.id === dest) ?? sites[0];
+  const enabled = !!dest;
+  const { data: target, isLoading, isError, error, refetch } = useQuery({
+    ...siteQuery(dest ?? ""),
+    enabled,
+  });
 
   const distance = useMemo(() => {
-    if (!geo.coords) return null;
+    if (!geo.coords || !target) return null;
     return distanceMeters(geo.coords, target.coords);
   }, [geo.coords, target]);
 
-  const eta = distance ? Math.max(1, Math.round(distance / 80)) : null; // ~80 m/min walking
-  const indicacion = distance
-    ? distance > 100
-      ? `Avanza recto ${Math.round(distance)} metros hacia ${target.title}`
-      : `Estás muy cerca de ${target.title}`
-    : "Obteniendo tu ubicación…";
+  const eta = distance ? Math.max(1, Math.round(distance / 80)) : null;
+  const indicacion = target
+    ? distance
+      ? distance > 100
+        ? `Avanza recto ${Math.round(distance)} metros hacia ${target.title}`
+        : `Estás muy cerca de ${target.title}`
+      : "Obteniendo tu ubicación…"
+    : "Selecciona un destino";
 
   function repetir() {
     speak(indicacion);
   }
   function detener() {
     stopSpeaking();
+  }
+
+  if (!dest) {
+    return (
+      <AppShell title="Navegación" back>
+        <div className="mx-auto max-w-3xl px-5 py-10 text-muted-foreground">
+          No se especificó un destino. Vuelve a un lugar y pulsa "Iniciar recorrido".
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <AppShell title="Navegación" back>
+        <div className="mx-auto flex max-w-3xl items-center gap-2 px-5 py-10 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" /> Cargando destino…
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (isError || !target) {
+    return (
+      <AppShell title="Navegación" back>
+        <div className="mx-auto max-w-3xl px-5 py-10">
+          <div className="rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-4 text-sm text-destructive">
+            <div className="flex items-center gap-2 font-semibold">
+              <AlertTriangle className="h-5 w-5" /> No se pudo cargar el destino
+            </div>
+            <p className="mt-1">{(error as Error)?.message ?? "Destino no encontrado."}</p>
+            <button
+              onClick={() => refetch()}
+              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      </AppShell>
+    );
   }
 
   return (
