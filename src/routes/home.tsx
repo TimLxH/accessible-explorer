@@ -150,7 +150,7 @@ function Home() {
   const Icon = btnIcon;
 
   return (
-    <AppShell title="Inicio" bottomBar={<ListenBar />}>
+    <AppShell title="Inicio" bottomBar={<EmergencyBar />}>
       <div className="mx-auto max-w-5xl px-5 py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
