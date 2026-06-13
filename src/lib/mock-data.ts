@@ -47,6 +47,7 @@ export const sites: Site[] = [
     info: "Altitud: 3,418 msnm. Servicios: restaurantes, paseos en bote, mirador.",
     accessibility: "Nivel alto. Caminos pavimentados, rampas en muelle principal.",
     favorite: true,
+    coords: { lat: -11.7833, lng: -75.5 },
   },
   {
     id: "convento-ocopa",
