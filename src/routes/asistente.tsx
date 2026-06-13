@@ -150,11 +150,13 @@ function Asistente() {
           />
           <button
             type="submit"
+            disabled={thinking || !text.trim()}
             aria-label="Enviar mensaje al asistente"
-            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-purple text-purple-foreground hover:bg-purple/90"
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-purple text-purple-foreground hover:bg-purple/90 disabled:opacity-50"
           >
             <Send className="h-5 w-5" aria-hidden="true" />
           </button>
+
         </div>
       </form>
     </AppShell>
