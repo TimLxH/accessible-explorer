@@ -1,0 +1,137 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight, LogOut } from "lucide-react";
+import { useState } from "react";
+import { AppShell } from "@/components/app-shell";
+
+export const Route = createFileRoute("/configuracion")({
+  head: () => ({ meta: [{ title: "Configuración" }] }),
+  component: Config,
+});
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative h-7 w-12 rounded-full transition-colors ${checked ? "bg-purple" : "bg-muted"}`}
+      role="switch"
+      aria-checked={checked}
+    >
+      <span
+        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-5" : "translate-x-0.5"}`}
+      />
+    </button>
+  );
+}
+
+function Row({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4 last:border-0">
+      {children}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h3>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">{children}</div>
+    </div>
+  );
+}
+
+function Config() {
+  const [voice, setVoice] = useState(true);
+  const [highContrast, setHighContrast] = useState(false);
+  const [vibration, setVibration] = useState(true);
+  const [volume, setVolume] = useState(70);
+
+  return (
+    <AppShell title="Configuración" back>
+      <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
+        <Section title="Accesibilidad">
+          <Row>
+            <div>
+              <p className="font-medium">Guía por voz</p>
+              <p className="text-sm text-muted-foreground">Lectura automática de pantallas</p>
+            </div>
+            <Toggle checked={voice} onChange={setVoice} />
+          </Row>
+          <Row>
+            <div>
+              <p className="font-medium">Alto contraste</p>
+              <p className="text-sm text-muted-foreground">Aumenta la legibilidad</p>
+            </div>
+            <Toggle checked={highContrast} onChange={setHighContrast} />
+          </Row>
+          <Row>
+            <div>
+              <p className="font-medium">Vibración</p>
+              <p className="text-sm text-muted-foreground">Feedback háptico al navegar</p>
+            </div>
+            <Toggle checked={vibration} onChange={setVibration} />
+          </Row>
+          <Row>
+            <div className="flex-1">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="font-medium">Volumen de voz</p>
+                <span className="text-sm text-muted-foreground">{volume}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={volume}
+                onChange={(e) => setVolume(Number(e.target.value))}
+                className="w-full accent-purple"
+              />
+            </div>
+          </Row>
+          <Row>
+            <p className="font-medium">Idioma</p>
+            <select className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
+              <option>Español</option>
+              <option>English</option>
+              <option>Quechua</option>
+            </select>
+          </Row>
+          <Row>
+            <p className="font-medium">Tipo de guía</p>
+            <select className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
+              <option>Detallada</option>
+              <option>Breve</option>
+              <option>Solo direcciones</option>
+            </select>
+          </Row>
+        </Section>
+
+        <Section title="Cuenta">
+          <Link to="/home" className="flex w-full items-center justify-between px-5 py-4 hover:bg-accent/40">
+            <div>
+              <p className="font-medium">Editar perfil</p>
+              <p className="text-sm text-muted-foreground">Nombre, foto y datos personales</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </Link>
+          <Link to="/home" className="flex w-full items-center justify-between border-t border-border px-5 py-4 hover:bg-accent/40">
+            <div>
+              <p className="font-medium">Contacto de emergencia</p>
+              <p className="text-sm text-muted-foreground">Configurar número y nombre</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </Link>
+        </Section>
+
+        <Link
+          to="/"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-destructive bg-white py-4 font-semibold text-destructive hover:bg-destructive/5"
+        >
+          <LogOut className="h-5 w-5" /> Cerrar sesión
+        </Link>
+      </div>
+    </AppShell>
+  );
+}
