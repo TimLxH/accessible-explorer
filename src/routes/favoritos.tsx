@@ -1,10 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, Heart } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ListenBar } from "@/components/listen-bar";
 import { SiteCard } from "@/components/site-card";
 import { sitesQuery } from "@/lib/api";
+import { useAuth } from "@/hooks/use-auth";
+import { useFavoriteIds } from "@/hooks/use-favorites";
 
 export const Route = createFileRoute("/favoritos")({
   head: () => ({ meta: [{ title: "Favoritos" }] }),
@@ -12,13 +14,47 @@ export const Route = createFileRoute("/favoritos")({
 });
 
 function Favoritos() {
-  const { data, isLoading, isError, error, refetch } = useQuery(sitesQuery);
-  const favs = (data ?? []).filter((s) => s.favorite);
+  const { user, loading: authLoading } = useAuth();
+  const { data: sites, isLoading, isError, error, refetch } = useQuery(sitesQuery);
+  const { data: favIds, isLoading: favLoading } = useFavoriteIds();
+
+  if (authLoading) {
+    return (
+      <AppShell title="Favoritos" back>
+        <div className="mx-auto max-w-5xl px-5 py-6 text-muted-foreground">
+          <Loader2 className="inline h-5 w-5 animate-spin" /> Cargando…
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!user) {
+    return (
+      <AppShell title="Favoritos" back>
+        <div className="mx-auto max-w-md px-5 py-10 text-center">
+          <Heart className="mx-auto h-12 w-12 text-purple" />
+          <h2 className="mt-4 text-xl font-bold">Guarda tus lugares favoritos</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Inicia sesión para ver y guardar tus lugares preferidos.
+          </p>
+          <Link
+            to="/login"
+            className="mt-6 inline-block rounded-xl bg-purple px-6 py-3 font-semibold text-purple-foreground shadow hover:bg-purple/90"
+          >
+            Iniciar sesión
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const favs = (sites ?? []).filter((s) => favIds?.has(s.id));
+  const busy = isLoading || favLoading;
 
   return (
     <AppShell title="Favoritos" back bottomBar={<ListenBar label="Escuchar lista" />}>
       <div className="mx-auto max-w-5xl px-5 py-6">
-        {isLoading && (
+        {busy && (
           <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-6 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" /> Cargando favoritos…
           </div>
@@ -37,16 +73,22 @@ function Favoritos() {
             </button>
           </div>
         )}
-        {!isLoading && !isError && (
+        {!busy && !isError && (
           <>
             <p className="mb-4 text-sm text-muted-foreground">
               {favs.length} lugares guardados
             </p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {favs.map((s) => (
-                <SiteCard key={s.id} site={s} />
-              ))}
-            </div>
+            {favs.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+                Aún no tienes favoritos. Toca el corazón en cualquier lugar para guardarlo.
+              </p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {favs.map((s) => (
+                  <SiteCard key={s.id} site={{ ...s, favorite: true }} />
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

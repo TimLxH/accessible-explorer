@@ -1,10 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { speak } from "@/lib/speech";
 import { AppShell } from "@/components/app-shell";
 import { siteQuery } from "@/lib/api";
+import { useAuth } from "@/hooks/use-auth";
+import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
+import { useRecordVisit } from "@/hooks/use-history";
 
 export const Route = createFileRoute("/detalle/$id")({
   head: ({ params }) => ({
@@ -41,7 +44,11 @@ function Detalle() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const { data: site, isLoading, isError, error, refetch } = useQuery(siteQuery(id));
-  const [fav, setFav] = useState(false);
+  const { user } = useAuth();
+  const { data: favIds } = useFavoriteIds();
+  const toggleFav = useToggleFavorite();
+  const isFav = !!favIds?.has(id);
+  useRecordVisit(site?.id);
 
   if (isLoading) {
     return (
@@ -84,13 +91,24 @@ function Detalle() {
       <div className="relative h-64 w-full overflow-hidden sm:h-80">
         <img src={site.image} alt={site.title} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <button
-          onClick={() => setFav((f) => !f)}
-          aria-label="Favorito"
-          className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full bg-white/95 text-purple shadow-lg"
-        >
-          <Heart className={`h-6 w-6 ${fav ? "fill-current" : ""}`} />
-        </button>
+        {user ? (
+          <button
+            onClick={() => toggleFav.mutate({ lugarId: site.id, isFav })}
+            disabled={toggleFav.isPending}
+            aria-label="Favorito"
+            className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full bg-white/95 text-purple shadow-lg disabled:opacity-60"
+          >
+            <Heart className={`h-6 w-6 ${isFav ? "fill-current" : ""}`} />
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            aria-label="Inicia sesión para guardar favoritos"
+            className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full bg-white/95 text-purple shadow-lg"
+          >
+            <Heart className="h-6 w-6" />
+          </Link>
+        )}
       </div>
       <div className="mx-auto max-w-3xl px-5 py-6">
         <h2 className="text-3xl font-extrabold">{site.title}</h2>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Eye, EyeOff, Volume2 } from "lucide-react";
+import { Eye, EyeOff, Volume2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Iniciar sesión — Turismo Sin Barreras" }] }),
@@ -9,7 +10,25 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const [show, setShow] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    nav({ to: "/home" });
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className="bg-navy px-6 pb-10 pt-12 text-navy-foreground">
@@ -18,7 +37,7 @@ function Login() {
         <p className="mt-1 text-white/70">Inicia sesión para continuar tu viaje</p>
       </div>
       <form
-        onSubmit={(e) => { e.preventDefault(); nav({ to: "/home" }); }}
+        onSubmit={onSubmit}
         className="mx-auto -mt-6 w-full max-w-md flex-1 space-y-5 rounded-t-3xl bg-card p-6 pt-8 shadow-sm sm:rounded-3xl sm:p-8"
       >
         <div className="space-y-1.5">
@@ -26,6 +45,8 @@ function Login() {
           <input
             type="email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@correo.com"
             className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base outline-none focus:border-purple focus:ring-2 focus:ring-purple/20"
           />
@@ -36,6 +57,8 @@ function Login() {
             <input
               type={show ? "text" : "password"}
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-base outline-none focus:border-purple focus:ring-2 focus:ring-purple/20"
             />
@@ -49,13 +72,15 @@ function Login() {
             </button>
           </div>
         </div>
-        <a href="#" className="block text-right text-sm font-medium text-purple hover:underline">
-          ¿Olvidaste tu contraseña?
-        </a>
+        {error && (
+          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        )}
         <button
           type="submit"
-          className="w-full rounded-xl bg-purple py-4 text-base font-semibold text-purple-foreground shadow transition-colors hover:bg-purple/90"
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple py-4 text-base font-semibold text-purple-foreground shadow transition-colors hover:bg-purple/90 disabled:opacity-60"
         >
+          {loading && <Loader2 className="h-5 w-5 animate-spin" />}
           Iniciar sesión
         </button>
         <p className="text-center text-sm text-muted-foreground">
