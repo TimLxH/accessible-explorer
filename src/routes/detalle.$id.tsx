@@ -1,6 +1,7 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { Heart, MapPin, ChevronDown, Volume2, Navigation } from "lucide-react";
 import { useState } from "react";
+import { speak } from "@/lib/speech";
 import { AppShell } from "@/components/app-shell";
 import { sites } from "@/lib/mock-data";
 
