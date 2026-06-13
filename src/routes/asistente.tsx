@@ -1,45 +1,55 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Mic, Send, Square } from "lucide-react";
 import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { EmergencyBar } from "@/components/emergency-bar";
+import { askAssistant } from "@/lib/asistente.functions";
 import { chat as initial } from "@/lib/mock-data";
 import { getRecognition, speak, stopSpeaking } from "@/lib/speech";
 
 export const Route = createFileRoute("/asistente")({
-  head: () => ({ meta: [{ title: "Asistente — Turismo Sin Barreras" }] }),
+  head: () => ({ meta: [{ title: "Asistente — Puriy Ayni" }] }),
   component: Asistente,
 });
 
-function fakeAnswer(q: string) {
-  const t = q.toLowerCase();
-  if (t.includes("cerca") || t.includes("cercano"))
-    return "Encontré varios lugares accesibles cerca de ti. Abre 'Lugares cercanos' para verlos ordenados por distancia.";
-  if (t.includes("torre")) return "Torre Torre es una formación geológica a 2,3 kilómetros. Tiene acceso parcial para sillas de ruedas en el mirador inicial.";
-  if (t.includes("emergencia") || t.includes("ayuda"))
-    return "Puedo compartir tu ubicación. Ve a la sección Emergencia para activarlo.";
-  return "Entendido. Estoy buscando información para ti sobre " + q;
-}
+type Msg = { id: number; from: "user" | "assistant"; text: string };
 
 function Asistente() {
-  const [messages, setMessages] = useState(initial);
+  const [messages, setMessages] = useState<Msg[]>(initial as Msg[]);
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
+  const [thinking, setThinking] = useState(false);
   const recRef = useRef<any>(null);
+  const ask = useServerFn(askAssistant);
 
-  function reply(userText: string) {
-    const answer = fakeAnswer(userText);
-    setMessages((m) => [
-      ...m,
-      { id: Date.now(), from: "user", text: userText },
-      { id: Date.now() + 1, from: "assistant", text: answer },
-    ]);
-    speak(answer);
+  async function reply(userText: string) {
+    const userMsg: Msg = { id: Date.now(), from: "user", text: userText };
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
+    setThinking(true);
+    try {
+      const history = nextMessages.map((m) => ({
+        role: m.from === "user" ? ("user" as const) : ("assistant" as const),
+        content: m.text,
+      }));
+      const res = await ask({ data: { messages: history } });
+      const answer = res?.text?.trim() || "No pude generar una respuesta. Intenta de nuevo.";
+      setMessages((m) => [...m, { id: Date.now() + 1, from: "assistant", text: answer }]);
+      speak(answer);
+    } catch (err) {
+      console.error(err);
+      const fallback = "Lo siento, hubo un error de conexión. Por favor intenta de nuevo.";
+      setMessages((m) => [...m, { id: Date.now() + 1, from: "assistant", text: fallback }]);
+      speak(fallback);
+    } finally {
+      setThinking(false);
+    }
   }
 
   function send(e: React.FormEvent) {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || thinking) return;
     reply(text.trim());
     setText("");
   }
