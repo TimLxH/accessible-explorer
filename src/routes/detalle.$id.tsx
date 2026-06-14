@@ -160,6 +160,19 @@ function Detalle() {
           </button>
         </div>
 
+        {site.id === "dest-01" && (
+          <section className="mt-6" aria-label="Mapa interactivo del Parque de la Identidad Wanka">
+            <div className="mb-2 flex items-center gap-2">
+              <Map className="h-5 w-5 text-purple" aria-hidden="true" />
+              <h3 className="text-lg font-bold">Mapa interactivo del parque</h3>
+            </div>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Tu ubicación aparece como un punto azul brillante. Toca cualquier pin para escuchar su descripción.
+            </p>
+            <InteractiveMap />
+          </section>
+        )}
+
         <Link
           to="/recorrido/$id"
           params={{ id: site.id }}
