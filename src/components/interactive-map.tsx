@@ -271,7 +271,7 @@ export default function InteractiveMap() {
 
           {/* Caminos del parque (referencia artística importada del SVG) */}
           <image
-            href="/src/assets/parque-map.svg"
+            href={parqueMapUrl}
             x="0" y="0" width="4438.24" height="6870.11"
             preserveAspectRatio="xMidYMid meet"
             style={{ pointerEvents: "none" }}
