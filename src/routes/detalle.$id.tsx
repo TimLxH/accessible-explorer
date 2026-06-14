@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2 } from "lucide-react";
+import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2, Map } from "lucide-react";
 import { useState } from "react";
 import { speak } from "@/lib/speech";
 import { AppShell } from "@/components/app-shell";
+import InteractiveMap from "@/components/interactive-map";
 import { siteQuery } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
