@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Square, Volume2, X, Accessibility, MapPin } from "lucide-react";
 import { speak, stopSpeaking } from "@/lib/speech";
+import parqueMapUrl from "@/assets/parque-map.svg?url";
 
 /**
  * Mapa interactivo del Parque de la Identidad Wanka.
