@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Square, Volume2, X, Accessibility, MapPin } from "lucide-react";
 import { speak, stopSpeaking } from "@/lib/speech";
-import parqueMapUrl from "@/assets/parque-map.svg?url";
+import parqueFondo from "@/assets/parque-fondo.png.asset.json";
 
 /**
  * Mapa interactivo del Parque de la Identidad Wanka.
@@ -271,7 +271,7 @@ export default function InteractiveMap() {
 
           {/* Caminos del parque (referencia artística importada del SVG) */}
           <image
-            href={parqueMapUrl}
+            href={parqueFondo.url}
             x="0" y="0" width="4438.24" height="6870.11"
             preserveAspectRatio="xMidYMid meet"
             style={{ pointerEvents: "none" }}
