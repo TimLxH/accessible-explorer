@@ -92,6 +92,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Puriy Ayni — Guía de viaje accesible" },
+      { name: "description", content: "Accessible Explorer is a responsive web application for exploring tourist destinations." },
+      { property: "og:description", content: "Accessible Explorer is a responsive web application for exploring tourist destinations." },
+      { name: "twitter:description", content: "Accessible Explorer is a responsive web application for exploring tourist destinations." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/h8ee8mgs4rYjoESiQU7ZQS2Bylq1/social-images/social-1781410078422-image.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/h8ee8mgs4rYjoESiQU7ZQS2Bylq1/social-images/social-1781410078422-image.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
