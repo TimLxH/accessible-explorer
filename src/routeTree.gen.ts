@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as NavegacionRouteImport } from './routes/navegacion'
 import { Route as MapaRecorridoRouteImport } from './routes/mapa-recorrido'
-import { Route as MapaInteractivoRouteImport } from './routes/mapa-interactivo'
 import { Route as LugaresCercanosRouteImport } from './routes/lugares-cercanos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
@@ -39,11 +38,6 @@ const NavegacionRoute = NavegacionRouteImport.update({
 const MapaRecorridoRoute = MapaRecorridoRouteImport.update({
   id: '/mapa-recorrido',
   path: '/mapa-recorrido',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MapaInteractivoRoute = MapaInteractivoRouteImport.update({
-  id: '/mapa-interactivo',
-  path: '/mapa-interactivo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LugaresCercanosRoute = LugaresCercanosRouteImport.update({
@@ -118,7 +112,6 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/lugares-cercanos': typeof LugaresCercanosRoute
-  '/mapa-interactivo': typeof MapaInteractivoRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
   '/register': typeof RegisterRoute
@@ -136,7 +129,6 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/lugares-cercanos': typeof LugaresCercanosRoute
-  '/mapa-interactivo': typeof MapaInteractivoRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
   '/register': typeof RegisterRoute
@@ -155,7 +147,6 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/lugares-cercanos': typeof LugaresCercanosRoute
-  '/mapa-interactivo': typeof MapaInteractivoRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
   '/register': typeof RegisterRoute
@@ -175,7 +166,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/lugares-cercanos'
-    | '/mapa-interactivo'
     | '/mapa-recorrido'
     | '/navegacion'
     | '/register'
@@ -193,7 +183,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/lugares-cercanos'
-    | '/mapa-interactivo'
     | '/mapa-recorrido'
     | '/navegacion'
     | '/register'
@@ -211,7 +200,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/lugares-cercanos'
-    | '/mapa-interactivo'
     | '/mapa-recorrido'
     | '/navegacion'
     | '/register'
@@ -230,7 +218,6 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   LugaresCercanosRoute: typeof LugaresCercanosRoute
-  MapaInteractivoRoute: typeof MapaInteractivoRoute
   MapaRecorridoRoute: typeof MapaRecorridoRoute
   NavegacionRoute: typeof NavegacionRoute
   RegisterRoute: typeof RegisterRoute
@@ -259,13 +246,6 @@ declare module '@tanstack/react-router' {
       path: '/mapa-recorrido'
       fullPath: '/mapa-recorrido'
       preLoaderRoute: typeof MapaRecorridoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mapa-interactivo': {
-      id: '/mapa-interactivo'
-      path: '/mapa-interactivo'
-      fullPath: '/mapa-interactivo'
-      preLoaderRoute: typeof MapaInteractivoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lugares-cercanos': {
@@ -366,7 +346,6 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   LugaresCercanosRoute: LugaresCercanosRoute,
-  MapaInteractivoRoute: MapaInteractivoRoute,
   MapaRecorridoRoute: MapaRecorridoRoute,
   NavegacionRoute: NavegacionRoute,
   RegisterRoute: RegisterRoute,
@@ -376,3 +355,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
