@@ -1,5 +1,6 @@
 // Speech helpers: TTS via ElevenLabs (server fn) with browser fallback, STT via Web Speech API.
 import { synthesizeSpeech } from "@/lib/tts.functions";
+import { getVoiceRate } from "@/lib/voice-settings";
 
 let currentAudio: HTMLAudioElement | null = null;
 let currentToken = 0;
@@ -14,7 +15,9 @@ function browserSpeak(text: string, opts?: { lang?: string; rate?: number }) {
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = opts?.lang ?? "es-ES";
-  u.rate = opts?.rate ?? 0.95;
+  // Si no se pasa rate explícito, usa el guardado en configuración.
+  const savedRate = getVoiceRate();
+  u.rate = opts?.rate ?? savedRate;
   u.pitch = 1;
   const voice = synth.getVoices().find((v) => v.lang.startsWith("es"));
   if (voice) u.voice = voice;
@@ -70,3 +73,4 @@ export function getRecognition(opts?: {
   r.maxAlternatives = 3;
   return r;
 }
+

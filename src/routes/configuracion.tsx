@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, LogOut } from "lucide-react";
 import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { useVoiceEnabled } from "@/lib/voice-settings";
+import { Slider } from "@/components/ui/slider";
+import { useVoiceEnabled, useVoiceRate } from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/configuracion")({
   head: () => ({ meta: [{ title: "Configuración — Puriy Ayni" }] }),
@@ -55,6 +56,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Config() {
   const [voiceCommands, setVoiceCommands] = useVoiceEnabled();
+  const [voiceRate, setVoiceRate] = useVoiceRate();
   const [voice, setVoice] = useState(true);
   const [highContrast, setHighContrast] = useState(false);
   const [vibration, setVibration] = useState(true);
@@ -83,6 +85,23 @@ function Config() {
               <p className="text-sm text-muted-foreground">Lectura automática de pantallas</p>
             </div>
             <Toggle checked={voice} onChange={setVoice} label="Guía por voz, lectura automática de pantallas" />
+          </Row>
+          <Row>
+            <div className="flex-1">
+              <div className="mb-2 flex items-center justify-between">
+                <label htmlFor="voice-rate" className="font-medium">Velocidad de voz</label>
+                <span aria-hidden="true" className="text-sm text-muted-foreground">{voiceRate.toFixed(1)}x</span>
+              </div>
+              <Slider
+                id="voice-rate"
+                min={1.0}
+                max={1.6}
+                step={0.1}
+                value={[voiceRate]}
+                onValueChange={(val) => setVoiceRate(val[0])}
+                aria-label={`Velocidad de voz: ${voiceRate.toFixed(1)} veces`}
+              />
+            </div>
           </Row>
           <Row>
             <div>
