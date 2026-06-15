@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Volume2 } from "lucide-react";
+import { useEffect } from "react";
 import logo from "@/assets/puriy-ayni-logo.png.asset.json";
+import { getVoiceEnabled, getVoiceRate } from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -13,6 +15,45 @@ export const Route = createFileRoute("/")({
 });
 
 function Welcome() {
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (!getVoiceEnabled()) return;
+    // Evitar repetir en cada recarga durante la misma sesión
+    try {
+      if (window.sessionStorage.getItem("puriy_welcome_spoken") === "1") return;
+    } catch { /* ignore */ }
+
+    const text =
+      "Bienvenido a Puriy Ayni. Tu asistente de turismo accesible. Opciones disponibles: Iniciar sesión, Registrarse.";
+
+    const speakWelcome = () => {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "es-ES";
+      u.rate = getVoiceRate();
+      const voice = window.speechSynthesis
+        .getVoices()
+        .find((v) => v.lang.startsWith("es"));
+      if (voice) u.voice = voice;
+      window.speechSynthesis.speak(u);
+      try {
+        window.sessionStorage.setItem("puriy_welcome_spoken", "1");
+      } catch { /* ignore */ }
+    };
+
+    // Algunos navegadores necesitan que las voces carguen primero
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.onvoiceschanged = speakWelcome;
+    } else {
+      // Pequeño retraso para no interferir con el renderizado inicial
+      const id = setTimeout(speakWelcome, 600);
+      return () => clearTimeout(id);
+    }
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
   function escuchar() {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
@@ -20,6 +61,7 @@ function Welcome() {
       "Bienvenido a Puriy Ayni, tu asistente de viaje accesible. Descubre lugares accesibles, con guía de voz y rutas pensadas para todos. Toca el botón de iniciar sesión para entrar a tu cuenta, o el botón de registrarse para crear una nueva.",
     );
     u.lang = "es-ES";
+    u.rate = getVoiceRate();
     window.speechSynthesis.speak(u);
   }
   return (
