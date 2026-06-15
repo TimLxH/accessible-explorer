@@ -292,6 +292,13 @@ function NavegacionTab() {
         <p className="mt-1 text-2xl font-bold leading-tight">{mensaje}</p>
       </div>
 
+      <ProgresoYMapa
+        nodos={nodos}
+        posicionActual={posicion}
+        nodoActivoId={nodoActivoId}
+      />
+
+
       {error && (
         <p
           role="alert"
