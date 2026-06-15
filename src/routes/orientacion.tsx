@@ -139,6 +139,7 @@ function NavegacionTab() {
   );
   const [mensaje, setMensaje] = useState<string>("Pulsa 'Iniciar Recorrido' para comenzar.");
   const [error, setError] = useState<string | null>(null);
+  const [nodoActivoId, setNodoActivoId] = useState<number | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const ultimoNodoRef = useRef<number | null>(null);
   const nodosRef = useRef<Nodo[]>(nodos);
