@@ -7,6 +7,7 @@ import {
   useCrearResena,
   useEliminarResena,
 } from "@/hooks/use-resenas";
+import { ResenaInteracciones } from "@/components/resena-interacciones";
 import { speak } from "@/lib/speech";
 
 function Estrellas({
@@ -264,6 +265,11 @@ export function ResenasSection({
                   <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Eliminar
                 </button>
               )}
+              <ResenaInteracciones
+                lugarId={lugarId}
+                resenaId={r.id}
+                autorResena={r.autor || "Visitante"}
+              />
             </li>
           );
         })}
