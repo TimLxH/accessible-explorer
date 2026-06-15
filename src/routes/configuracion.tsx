@@ -1,10 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, LogOut } from "lucide-react";
-import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Slider } from "@/components/ui/slider";
 import { speak } from "@/lib/speech";
-import { useVoiceEnabled, useVoiceRate } from "@/lib/voice-settings";
+import {
+  useVoiceEnabled,
+  useVoiceRate,
+  useGuideVoice,
+  useHighContrast,
+  useVibration,
+  useVoiceVolume,
+  useLang,
+  useGuideType,
+  vibrate,
+  type Lang,
+  type GuideType,
+} from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/configuracion")({
   head: () => ({ meta: [{ title: "Configuración — Puriy Ayni" }] }),
