@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { speak, stopSpeaking } from "@/lib/speech";
+import { MapaRecorridoCanvas } from "@/components/MapaRecorridoCanvas";
 
 export const Route = createFileRoute("/orientacion")({
   head: () => ({
