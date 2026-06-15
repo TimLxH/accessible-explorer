@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, LogOut, Sparkles } from "lucide-react";
-import { useEffect } from "react";
-import { z } from "zod";
+import { ChevronRight, LogOut } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Slider } from "@/components/ui/slider";
 import { speak } from "@/lib/speech";
@@ -19,16 +17,10 @@ import {
   type GuideType,
 } from "@/lib/voice-settings";
 
-const searchSchema = z.object({
-  onboarding: z.coerce.number().optional(),
-});
-
 export const Route = createFileRoute("/configuracion")({
   head: () => ({ meta: [{ title: "Configuración — Puriy Ayni" }] }),
-  validateSearch: searchSchema,
   component: Config,
 });
-
 
 function Toggle({
   checked,
@@ -75,9 +67,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Config() {
-  const { onboarding } = Route.useSearch();
-  const isOnboarding = onboarding === 1;
-
   const [voiceCommands, setVoiceCommands] = useVoiceEnabled();
   const [voiceRate, setVoiceRate] = useVoiceRate();
   const [voice, setVoice] = useGuideVoice();
@@ -92,48 +81,9 @@ function Config() {
     speak(msg);
   };
 
-  // En el primer ingreso leemos la guía de personalización.
-  useEffect(() => {
-    if (!isOnboarding) return;
-    const t = setTimeout(() => {
-      speak(
-        "Bienvenido a Puriy Ayni. Antes de comenzar, personaliza tu experiencia. Aquí puedes activar los comandos por voz, la lectura automática, el alto contraste, la vibración, el volumen, el idioma y el tipo de guía. Cuando termines, pulsa Continuar para ir a iniciar sesión o registrarte. Más adelante podrás volver a estos ajustes desde el menú de Configuración.",
-      );
-    }, 700);
-    return () => clearTimeout(t);
-  }, [isOnboarding]);
-
   return (
-    <AppShell title="Configuración" back={!isOnboarding}>
+    <AppShell title="Configuración" back>
       <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
-        {isOnboarding && (
-          <section
-            aria-labelledby="onboarding-title"
-            className="rounded-2xl border-2 border-purple/40 bg-purple/5 p-5"
-          >
-            <div className="mb-2 flex items-center gap-2 text-purple">
-              <Sparkles className="h-5 w-5" aria-hidden="true" />
-              <h2 id="onboarding-title" className="text-lg font-bold">
-                Personaliza tu experiencia
-              </h2>
-            </div>
-            <p className="text-sm text-foreground/80">
-              Es tu primera vez en Puriy Ayni. Ajusta la voz, el contraste, la
-              vibración y el idioma según lo que más te ayude. Cuando termines,
-              pulsa <strong>Continuar</strong> para iniciar sesión o
-              registrarte. Siempre podrás volver desde el menú de
-              Configuración.
-            </p>
-            <Link
-              to="/"
-              aria-label="Continuar al inicio de sesión o registro"
-              className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-purple px-6 py-3 text-base font-semibold text-purple-foreground shadow hover:bg-purple/90"
-            >
-              Continuar
-            </Link>
-          </section>
-        )}
-
         <Section title="Accesibilidad">
           <Row>
             <div>
