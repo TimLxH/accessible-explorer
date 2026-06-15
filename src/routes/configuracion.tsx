@@ -94,7 +94,7 @@ function Config() {
             </div>
             <Toggle
               checked={voiceCommands}
-              onChange={setVoiceCommands}
+              onChange={(v) => { setVoiceCommands(v); announce(v ? "Comandos por voz activados" : "Comandos por voz desactivados"); }}
               label="Comandos y asistencia por voz en toda la aplicación"
             />
           </Row>
@@ -103,7 +103,11 @@ function Config() {
               <p className="font-medium">Guía por voz</p>
               <p className="text-sm text-muted-foreground">Lectura automática de pantallas</p>
             </div>
-            <Toggle checked={voice} onChange={setVoice} label="Guía por voz, lectura automática de pantallas" />
+            <Toggle
+              checked={voice}
+              onChange={(v) => { setVoice(v); if (v) announce("Guía por voz activada"); else vibrate(20); }}
+              label="Guía por voz, lectura automática de pantallas"
+            />
           </Row>
           <Row>
             <div className="flex-1">
@@ -120,7 +124,7 @@ function Config() {
                 onValueCommit={(val) => {
                   const v = val[0];
                   setVoiceRate(v);
-                  speak(`Velocidad ${v.toFixed(1)}`);
+                  announce(`Velocidad ${v.toFixed(1)}`);
                 }}
                 aria-labelledby="voice-rate-label"
                 aria-valuetext={`Velocidad ${voiceRate.toFixed(1)}`}
@@ -140,14 +144,22 @@ function Config() {
               <p className="font-medium">Alto contraste</p>
               <p className="text-sm text-muted-foreground">Aumenta la legibilidad</p>
             </div>
-            <Toggle checked={highContrast} onChange={setHighContrast} label="Alto contraste, aumenta la legibilidad" />
+            <Toggle
+              checked={highContrast}
+              onChange={(v) => { setHighContrast(v); announce(v ? "Alto contraste activado" : "Alto contraste desactivado"); }}
+              label="Alto contraste, aumenta la legibilidad"
+            />
           </Row>
           <Row>
             <div>
               <p className="font-medium">Vibración</p>
               <p className="text-sm text-muted-foreground">Feedback háptico al navegar</p>
             </div>
-            <Toggle checked={vibration} onChange={setVibration} label="Vibración, feedback háptico al navegar" />
+            <Toggle
+              checked={vibration}
+              onChange={(v) => { setVibration(v); if (v) vibrate([30, 40, 30]); announce(v ? "Vibración activada" : "Vibración desactivada"); }}
+              label="Vibración, feedback háptico al navegar"
+            />
           </Row>
           <Row>
             <div className="flex-1">
@@ -162,6 +174,9 @@ function Config() {
                 max={100}
                 value={volume}
                 onChange={(e) => setVolume(Number(e.target.value))}
+                onMouseUp={() => announce(`Volumen ${volume} por ciento`)}
+                onTouchEnd={() => announce(`Volumen ${volume} por ciento`)}
+                onKeyUp={(e) => { if (e.key === "ArrowLeft" || e.key === "ArrowRight") announce(`Volumen ${volume} por ciento`); }}
                 aria-valuetext={`${volume} por ciento`}
                 className="w-full accent-purple"
               />
@@ -169,21 +184,40 @@ function Config() {
           </Row>
           <Row>
             <label htmlFor="lang-select" className="font-medium">Idioma</label>
-            <select id="lang-select" className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
-              <option>Español</option>
-              <option>English</option>
-              <option>Quechua</option>
+            <select
+              id="lang-select"
+              value={lang}
+              onChange={(e) => {
+                const v = e.target.value as Lang;
+                setLang(v);
+                announce(v === "en" ? "Language set to English" : v === "qu" ? "Idioma quechua" : "Idioma español");
+              }}
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="qu">Quechua</option>
             </select>
           </Row>
           <Row>
             <label htmlFor="guide-type" className="font-medium">Tipo de guía</label>
-            <select id="guide-type" className="rounded-lg border border-input bg-background px-3 py-2 text-sm">
-              <option>Detallada</option>
-              <option>Breve</option>
-              <option>Solo direcciones</option>
+            <select
+              id="guide-type"
+              value={guideType}
+              onChange={(e) => {
+                const v = e.target.value as GuideType;
+                setGuideType(v);
+                announce(`Guía ${v}`);
+              }}
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="detallada">Detallada</option>
+              <option value="breve">Breve</option>
+              <option value="direcciones">Solo direcciones</option>
             </select>
           </Row>
         </Section>
+
 
         <Section title="Cuenta">
           <Link
