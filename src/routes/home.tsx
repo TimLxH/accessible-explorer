@@ -58,8 +58,8 @@ function speakSequence(parts: string[], onDone: () => void) {
 
 function matchTile(transcript: string): Tile | null {
   const t = transcript.toLowerCase();
-  // exact number first (1..6)
-  const numMatch = t.match(/\b([1-6]|uno|dos|tres|cuatro|cinco|seis)\b/);
+  // exact number first (1..7)
+  const numMatch = t.match(/\b([1-7]|uno|dos|tres|cuatro|cinco|seis|siete)\b/);
   if (numMatch) {
     const map: Record<string, number> = {
       "1": 0, uno: 0,
@@ -68,6 +68,7 @@ function matchTile(transcript: string): Tile | null {
       "4": 3, cuatro: 3,
       "5": 4, cinco: 4,
       "6": 5, seis: 5,
+      "7": 6, siete: 6,
     };
     const idx = map[numMatch[1]];
     if (idx != null) return tiles[idx];
