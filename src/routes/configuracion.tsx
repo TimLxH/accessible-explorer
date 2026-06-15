@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, LogOut } from "lucide-react";
 import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { useVoiceEnabled } from "@/lib/voice-settings";
+import { Slider } from "@/components/ui/slider";
+import { useVoiceEnabled, useVoiceRate } from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/configuracion")({
   head: () => ({ meta: [{ title: "Configuración — Puriy Ayni" }] }),
@@ -55,6 +56,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Config() {
   const [voiceCommands, setVoiceCommands] = useVoiceEnabled();
+  const [voiceRate, setVoiceRate] = useVoiceRate();
   const [voice, setVoice] = useState(true);
   const [highContrast, setHighContrast] = useState(false);
   const [vibration, setVibration] = useState(true);
