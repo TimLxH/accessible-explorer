@@ -2,7 +2,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { Mic, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { getRecognition, stopSpeaking } from "@/lib/speech";
-import { getVoiceEnabled, useVoiceEnabled, VOICE_MENU_RATE } from "@/lib/voice-settings";
+import { getVoiceEnabled, useVoiceEnabled, getVoiceRate } from "@/lib/voice-settings";
 
 type Tile = {
   to: string;
