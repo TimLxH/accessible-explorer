@@ -174,6 +174,39 @@ export type Database = {
         }
         Relationships: []
       }
+      resenas: {
+        Row: {
+          autor: string
+          calificacion: number
+          comentario: string
+          created_at: string
+          id: string
+          lugar_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autor?: string
+          calificacion: number
+          comentario: string
+          created_at?: string
+          id?: string
+          lugar_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autor?: string
+          calificacion?: number
+          comentario?: string
+          created_at?: string
+          id?: string
+          lugar_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
