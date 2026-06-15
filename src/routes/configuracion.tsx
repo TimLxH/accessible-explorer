@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, LogOut } from "lucide-react";
+import { ChevronRight, LogOut, Sparkles } from "lucide-react";
+import { useEffect } from "react";
+import { z } from "zod";
 import { AppShell } from "@/components/app-shell";
 import { Slider } from "@/components/ui/slider";
 import { speak } from "@/lib/speech";
@@ -17,10 +19,16 @@ import {
   type GuideType,
 } from "@/lib/voice-settings";
 
+const searchSchema = z.object({
+  onboarding: z.coerce.number().optional(),
+});
+
 export const Route = createFileRoute("/configuracion")({
   head: () => ({ meta: [{ title: "Configuración — Puriy Ayni" }] }),
+  validateSearch: searchSchema,
   component: Config,
 });
+
 
 function Toggle({
   checked,
