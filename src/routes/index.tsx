@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Volume2 } from "lucide-react";
 import { useEffect } from "react";
 import logo from "@/assets/puriy-ayni-logo.png.asset.json";
@@ -15,6 +15,21 @@ export const Route = createFileRoute("/")({
 });
 
 function Welcome() {
+  const navigate = useNavigate();
+
+  // Onboarding: la primera vez que se abre la app, llevar al usuario a
+  // Configuración para personalizar voz, contraste y demás preferencias.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (window.localStorage.getItem("puriy_onboarded") !== "1") {
+        window.localStorage.setItem("puriy_onboarded", "1");
+        navigate({ to: "/configuracion", search: { onboarding: 1 } as never });
+        return;
+      }
+    } catch { /* ignore */ }
+  }, [navigate]);
+
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     if (!getVoiceEnabled()) return;
