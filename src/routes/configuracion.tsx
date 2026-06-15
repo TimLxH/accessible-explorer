@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, LogOut } from "lucide-react";
 import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { useVoiceEnabled } from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/configuracion")({
   head: () => ({ meta: [{ title: "Configuración — Puriy Ayni" }] }),
@@ -53,6 +54,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Config() {
+  const [voiceCommands, setVoiceCommands] = useVoiceEnabled();
   const [voice, setVoice] = useState(true);
   const [highContrast, setHighContrast] = useState(false);
   const [vibration, setVibration] = useState(true);
@@ -62,6 +64,19 @@ function Config() {
     <AppShell title="Configuración" back>
       <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
         <Section title="Accesibilidad">
+          <Row>
+            <div>
+              <p className="font-medium">Comandos y asistencia por voz</p>
+              <p className="text-sm text-muted-foreground">
+                Activa el menú por voz global y la lectura de opciones. Si lo desactivas, se anula de inmediato.
+              </p>
+            </div>
+            <Toggle
+              checked={voiceCommands}
+              onChange={setVoiceCommands}
+              label="Comandos y asistencia por voz en toda la aplicación"
+            />
+          </Row>
           <Row>
             <div>
               <p className="font-medium">Guía por voz</p>

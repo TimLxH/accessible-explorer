@@ -23,6 +23,11 @@ function browserSpeak(text: string, opts?: { lang?: string; rate?: number }) {
 
 export function speak(text: string, opts?: { lang?: string; rate?: number }) {
   if (!text || typeof window === "undefined") return;
+  // Respect global voice preference.
+  try {
+    const v = window.localStorage.getItem("puriy_voice_enabled");
+    if (v === "0") return;
+  } catch { /* ignore */ }
   stopSpeaking();
   const token = ++currentToken;
 
