@@ -28,6 +28,7 @@ const tiles = [
   { to: "/favoritos", label: "Favoritos", spoken: "Favoritos", keywords: ["favorito", "favoritos"], icon: Heart, color: "bg-navy text-navy-foreground" },
   { to: "/historial", label: "Historial", spoken: "Historial", keywords: ["historial", "historia", "recientes"], icon: Clock, color: "bg-purple text-purple-foreground" },
   { to: "/emergencia", label: "Emergencia", spoken: "Emergencia", keywords: ["emergencia", "ayuda", "urgencia", "auxilio"], icon: AlertTriangle, color: "bg-destructive text-destructive-foreground" },
+  { to: "/orientacion", label: "Orientación", spoken: "Orientación accesible", keywords: ["orientación", "orientacion", "recorrido", "mapeo", "nodos"], icon: Map, color: "bg-navy text-navy-foreground" },
 ] as const;
 
 type Tile = (typeof tiles)[number];
