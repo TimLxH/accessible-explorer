@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Volume2,
   Square,
+  Map,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
