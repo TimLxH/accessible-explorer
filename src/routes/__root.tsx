@@ -146,9 +146,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <VoiceMenuFab />
+      <EmergencyProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <VoiceMenuFab />
+        <EmergencyGestureLayer />
+        <EmergencyOverlay />
+      </EmergencyProvider>
     </QueryClientProvider>
   );
 }
