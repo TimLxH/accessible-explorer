@@ -228,6 +228,8 @@ function NavegacionTab() {
       watchIdRef.current = null;
     }
     setActivo(false);
+    ultimoNodoRef.current = null;
+    setNodoActivoId(null);
     stopSpeaking();
   }
 
