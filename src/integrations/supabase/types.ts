@@ -174,6 +174,76 @@ export type Database = {
         }
         Relationships: []
       }
+      resena_reacciones: {
+        Row: {
+          created_at: string
+          id: string
+          resena_id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          resena_id: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          resena_id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resena_reacciones_resena_id_fkey"
+            columns: ["resena_id"]
+            isOneToOne: false
+            referencedRelation: "resenas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resena_respuestas: {
+        Row: {
+          autor: string
+          comentario: string
+          created_at: string
+          id: string
+          resena_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autor?: string
+          comentario: string
+          created_at?: string
+          id?: string
+          resena_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autor?: string
+          comentario?: string
+          created_at?: string
+          id?: string
+          resena_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resena_respuestas_resena_id_fkey"
+            columns: ["resena_id"]
+            isOneToOne: false
+            referencedRelation: "resenas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resenas: {
         Row: {
           autor: string
