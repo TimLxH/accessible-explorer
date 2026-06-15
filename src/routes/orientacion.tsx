@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapPin,
   Crosshair,
@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { speak, stopSpeaking } from "@/lib/speech";
+import { MapaRecorridoCanvas } from "@/components/MapaRecorridoCanvas";
 
 export const Route = createFileRoute("/orientacion")({
   head: () => ({
@@ -138,6 +139,7 @@ function NavegacionTab() {
   );
   const [mensaje, setMensaje] = useState<string>("Pulsa 'Iniciar Recorrido' para comenzar.");
   const [error, setError] = useState<string | null>(null);
+  const [nodoActivoId, setNodoActivoId] = useState<number | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const ultimoNodoRef = useRef<number | null>(null);
   const nodosRef = useRef<Nodo[]>(nodos);
@@ -226,6 +228,8 @@ function NavegacionTab() {
       watchIdRef.current = null;
     }
     setActivo(false);
+    ultimoNodoRef.current = null;
+    setNodoActivoId(null);
     stopSpeaking();
   }
 
@@ -242,6 +246,7 @@ function NavegacionTab() {
     if (nodoCercano && distMin < 4) {
       if (ultimoNodoRef.current !== nodoCercano.id) {
         ultimoNodoRef.current = nodoCercano.id;
+        setNodoActivoId(nodoCercano.id);
         const texto = `Estás pasando por: ${nodoCercano.nombre}`;
         setMensaje(texto);
         speak(texto);
@@ -249,6 +254,7 @@ function NavegacionTab() {
     } else {
       if (ultimoNodoRef.current !== null) {
         ultimoNodoRef.current = null;
+        setNodoActivoId(null);
         const texto = "Caminando entre puntos de referencia.";
         setMensaje(texto);
         speak(texto);
@@ -287,6 +293,13 @@ function NavegacionTab() {
         <p className="text-sm uppercase tracking-wide opacity-80">Anuncio actual</p>
         <p className="mt-1 text-2xl font-bold leading-tight">{mensaje}</p>
       </div>
+
+      <ProgresoYMapa
+        nodos={nodos}
+        posicionActual={posicion}
+        nodoActivoId={nodoActivoId}
+      />
+
 
       {error && (
         <p
@@ -682,3 +695,65 @@ function AdminTab() {
     </div>
   );
 }
+
+// ===========================================================
+// Progreso + Mapa simulado
+// ===========================================================
+
+function ProgresoYMapa({
+  nodos,
+  posicionActual,
+  nodoActivoId,
+}: {
+  nodos: Nodo[];
+  posicionActual: { lat: number; lng: number; accuracy: number } | null;
+  nodoActivoId: number | null;
+}) {
+  const activeIdx = nodoActivoId == null ? -1 : nodos.findIndex((n) => n.id === nodoActivoId);
+  const total = nodos.length;
+  const activeNodo = activeIdx >= 0 ? nodos[activeIdx] : null;
+
+  const distTotalRestante = useMemo(() => {
+    if (total < 2) return 0;
+    const desde = activeIdx >= 0 ? activeIdx : 0;
+    let sum = 0;
+    for (let i = desde; i < total - 1; i++) {
+      sum += haversineMeters(nodos[i].lat, nodos[i].lng, nodos[i + 1].lat, nodos[i + 1].lng);
+    }
+    return sum;
+  }, [nodos, activeIdx, total]);
+
+  const minutosRestantes = Math.max(0, Math.round(distTotalRestante / 0.8 / 60));
+  const progreso = total > 1 && activeIdx >= 0 ? activeIdx / (total - 1) : 0;
+
+  return (
+    <section aria-label="Progreso del recorrido" className="space-y-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-base font-bold text-foreground">
+          {activeNodo
+            ? `Nodo ${activeIdx + 1} de ${total} — ${activeNodo.nombre}`
+            : `Recorrido: ${total} nodos`}
+        </p>
+        <p className="text-sm text-muted-foreground">~{minutosRestantes} min restantes</p>
+      </div>
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(progreso * 100)}
+        className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+      >
+        <div
+          className="h-full rounded-full bg-purple transition-all duration-500"
+          style={{ width: `${progreso * 100}%` }}
+        />
+      </div>
+      <MapaRecorridoCanvas
+        nodos={nodos}
+        posicionActual={posicionActual}
+        nodoActivoId={nodoActivoId}
+      />
+    </section>
+  );
+}
+
