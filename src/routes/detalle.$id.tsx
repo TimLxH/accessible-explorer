@@ -4,6 +4,7 @@ import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2
 import { useState } from "react";
 import { speak } from "@/lib/speech";
 import { AppShell } from "@/components/app-shell";
+import { ResenasSection } from "@/components/resenas-section";
 import { siteQuery } from "@/lib/api";
 import { useAuth } from "@/hooks/use-auth";
 import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
@@ -168,6 +169,8 @@ function Detalle() {
         >
           Ingresar al lugar
         </Link>
+
+        <ResenasSection lugarId={site.id} lugarTitulo={site.title} />
       </div>
     </AppShell>
   );
