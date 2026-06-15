@@ -12,6 +12,9 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { VoiceMenuFab } from "../components/voice-menu-fab";
+import { EmergencyProvider } from "../lib/emergency-context";
+import { EmergencyGestureLayer } from "../components/emergency-gesture-layer";
+import { EmergencyOverlay } from "../components/emergency-overlay";
 
 function NotFoundComponent() {
   return (
