@@ -695,3 +695,65 @@ function AdminTab() {
     </div>
   );
 }
+
+// ===========================================================
+// Progreso + Mapa simulado
+// ===========================================================
+
+function ProgresoYMapa({
+  nodos,
+  posicionActual,
+  nodoActivoId,
+}: {
+  nodos: Nodo[];
+  posicionActual: { lat: number; lng: number; accuracy: number } | null;
+  nodoActivoId: number | null;
+}) {
+  const activeIdx = nodoActivoId == null ? -1 : nodos.findIndex((n) => n.id === nodoActivoId);
+  const total = nodos.length;
+  const activeNodo = activeIdx >= 0 ? nodos[activeIdx] : null;
+
+  const distTotalRestante = useMemo(() => {
+    if (total < 2) return 0;
+    const desde = activeIdx >= 0 ? activeIdx : 0;
+    let sum = 0;
+    for (let i = desde; i < total - 1; i++) {
+      sum += haversineMeters(nodos[i].lat, nodos[i].lng, nodos[i + 1].lat, nodos[i + 1].lng);
+    }
+    return sum;
+  }, [nodos, activeIdx, total]);
+
+  const minutosRestantes = Math.max(0, Math.round(distTotalRestante / 0.8 / 60));
+  const progreso = total > 1 && activeIdx >= 0 ? activeIdx / (total - 1) : 0;
+
+  return (
+    <section aria-label="Progreso del recorrido" className="space-y-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <p className="text-base font-bold text-foreground">
+          {activeNodo
+            ? `Nodo ${activeIdx + 1} de ${total} — ${activeNodo.nombre}`
+            : `Recorrido: ${total} nodos`}
+        </p>
+        <p className="text-sm text-muted-foreground">~{minutosRestantes} min restantes</p>
+      </div>
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(progreso * 100)}
+        className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+      >
+        <div
+          className="h-full rounded-full bg-purple transition-all duration-500"
+          style={{ width: `${progreso * 100}%` }}
+        />
+      </div>
+      <MapaRecorridoCanvas
+        nodos={nodos}
+        posicionActual={posicionActual}
+        nodoActivoId={nodoActivoId}
+      />
+    </section>
+  );
+}
+
