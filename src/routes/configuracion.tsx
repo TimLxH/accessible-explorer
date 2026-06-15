@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Slider } from "@/components/ui/slider";
+import { speak } from "@/lib/speech";
 import { useVoiceEnabled, useVoiceRate } from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/configuracion")({
@@ -89,18 +90,31 @@ function Config() {
           <Row>
             <div className="flex-1">
               <div className="mb-2 flex items-center justify-between">
-                <label htmlFor="voice-rate" className="font-medium">Velocidad de voz</label>
+                <span id="voice-rate-label" className="font-medium">Velocidad de voz</span>
                 <span aria-hidden="true" className="text-sm text-muted-foreground">{voiceRate.toFixed(1)}x</span>
               </div>
               <Slider
-                id="voice-rate"
                 min={1.0}
                 max={1.6}
                 step={0.1}
                 value={[voiceRate]}
                 onValueChange={(val) => setVoiceRate(val[0])}
-                aria-label={`Velocidad de voz: ${voiceRate.toFixed(1)} veces`}
+                onValueCommit={(val) => {
+                  const v = val[0];
+                  setVoiceRate(v);
+                  speak(`Velocidad ${v.toFixed(1)}`);
+                }}
+                aria-labelledby="voice-rate-label"
+                aria-valuetext={`Velocidad ${voiceRate.toFixed(1)}`}
               />
+              <output
+                htmlFor="voice-rate"
+                className="sr-only"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                Velocidad configurada en {voiceRate.toFixed(1)}
+              </output>
             </div>
           </Row>
           <Row>
