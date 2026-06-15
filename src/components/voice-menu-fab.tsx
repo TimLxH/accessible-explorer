@@ -49,7 +49,7 @@ function speakSequence(parts: string[], onDone: () => void) {
     if (i >= parts.length) { onDone(); return; }
     const u = new SpeechSynthesisUtterance(parts[i++]);
     u.lang = "es-ES";
-    u.rate = VOICE_MENU_RATE;
+    u.rate = getVoiceRate();
     u.onend = next;
     u.onerror = next;
     window.speechSynthesis.speak(u);
