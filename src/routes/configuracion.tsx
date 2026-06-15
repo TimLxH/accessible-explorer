@@ -87,6 +87,23 @@ function Config() {
             <Toggle checked={voice} onChange={setVoice} label="Guía por voz, lectura automática de pantallas" />
           </Row>
           <Row>
+            <div className="flex-1">
+              <div className="mb-2 flex items-center justify-between">
+                <label htmlFor="voice-rate" className="font-medium">Velocidad de voz</label>
+                <span aria-hidden="true" className="text-sm text-muted-foreground">{voiceRate.toFixed(1)}x</span>
+              </div>
+              <Slider
+                id="voice-rate"
+                min={1.0}
+                max={1.6}
+                step={0.1}
+                value={[voiceRate]}
+                onValueChange={(val) => setVoiceRate(val[0])}
+                aria-label={`Velocidad de voz: ${voiceRate.toFixed(1)} veces`}
+              />
+            </div>
+          </Row>
+          <Row>
             <div>
               <p className="font-medium">Alto contraste</p>
               <p className="text-sm text-muted-foreground">Aumenta la legibilidad</p>
