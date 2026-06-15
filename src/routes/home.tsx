@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { EmergencyBar } from "@/components/emergency-bar";
 import { getRecognition, stopSpeaking } from "@/lib/speech";
+import { getVoiceEnabled, VOICE_MENU_RATE } from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/home")({
   head: () => ({ meta: [{ title: "Inicio — Puriy Ayni" }] }),
@@ -42,8 +43,10 @@ function speakSequence(parts: string[], onDone: () => void) {
       onDone();
       return;
     }
+    if (!getVoiceEnabled()) { onDone(); return; }
     const u = new SpeechSynthesisUtterance(parts[i++]);
     u.lang = "es-ES";
+    u.rate = VOICE_MENU_RATE;
     u.onend = next;
     u.onerror = next;
     window.speechSynthesis.speak(u);
@@ -80,6 +83,10 @@ function Home() {
   const recRef = useRef<any>(null);
 
   function startVoiceMenu() {
+    if (!getVoiceEnabled()) {
+      setFeedback("La guía por voz está desactivada. Actívala en Configuración.");
+      return;
+    }
     if (status !== "idle") {
       stopSpeaking();
       recRef.current?.stop?.();
