@@ -75,7 +75,7 @@ function Login() {
               aria-label={show ? "Ocultar contraseña" : "Mostrar contraseña"}
               aria-pressed={show}
             >
-              {show ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
+              {show ? <Eye className="h-5 w-5" aria-hidden="true" /> : <EyeOff className="h-5 w-5" aria-hidden="true" />}
             </button>
           </div>
         </div>
