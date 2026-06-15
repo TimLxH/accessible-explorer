@@ -84,7 +84,7 @@ export function getRecognition(opts?: {
     (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
   if (!Ctor) return null;
   const r = new Ctor();
-  r.lang = "es-ES";
+  r.lang = readLang();
   r.interimResults = opts?.interim ?? false;
   r.continuous = opts?.continuous ?? false;
   r.maxAlternatives = 3;
