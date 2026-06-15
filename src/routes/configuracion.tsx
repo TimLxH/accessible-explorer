@@ -69,10 +69,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Config() {
   const [voiceCommands, setVoiceCommands] = useVoiceEnabled();
   const [voiceRate, setVoiceRate] = useVoiceRate();
-  const [voice, setVoice] = useState(true);
-  const [highContrast, setHighContrast] = useState(false);
-  const [vibration, setVibration] = useState(true);
-  const [volume, setVolume] = useState(70);
+  const [voice, setVoice] = useGuideVoice();
+  const [highContrast, setHighContrast] = useHighContrast();
+  const [vibration, setVibration] = useVibration();
+  const [volume, setVolume] = useVoiceVolume();
+  const [lang, setLang] = useLang();
+  const [guideType, setGuideType] = useGuideType();
+
+  const announce = (msg: string) => {
+    vibrate(20);
+    speak(msg);
+  };
 
   return (
     <AppShell title="Configuración" back>
