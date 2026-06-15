@@ -244,6 +244,7 @@ function NavegacionTab() {
     if (nodoCercano && distMin < 4) {
       if (ultimoNodoRef.current !== nodoCercano.id) {
         ultimoNodoRef.current = nodoCercano.id;
+        setNodoActivoId(nodoCercano.id);
         const texto = `Estás pasando por: ${nodoCercano.nombre}`;
         setMensaje(texto);
         speak(texto);
@@ -251,6 +252,7 @@ function NavegacionTab() {
     } else {
       if (ultimoNodoRef.current !== null) {
         ultimoNodoRef.current = null;
+        setNodoActivoId(null);
         const texto = "Caminando entre puntos de referencia.";
         setMensaje(texto);
         speak(texto);
