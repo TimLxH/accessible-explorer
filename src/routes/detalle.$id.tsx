@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2, MessageSquare } from "lucide-react";
+import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { speak } from "@/lib/speech";
 import { AppShell } from "@/components/app-shell";
@@ -170,34 +170,7 @@ function Detalle() {
           Ingresar al lugar
         </Link>
 
-        {user ? (
-          <ResenasSection lugarId={site.id} lugarTitulo={site.title} />
-        ) : (
-          <section aria-labelledby="resenas-bloqueo-titulo" className="mt-8 rounded-2xl border border-border bg-card p-5 text-center">
-            <h3 id="resenas-bloqueo-titulo" className="text-lg font-bold">
-              Reseñas y recomendaciones
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Inicia sesión o regístrate para ver las reseñas de otros visitantes y compartir tu experiencia.
-            </p>
-            <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:justify-center">
-              <Link
-                to="/login"
-                aria-label="Iniciar sesión para acceder a las reseñas"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-purple px-5 py-3 text-sm font-semibold text-purple-foreground shadow hover:bg-purple/90"
-              >
-                Iniciar sesión
-              </Link>
-              <Link
-                to="/register"
-                aria-label="Registrarse para acceder a las reseñas"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple px-5 py-3 text-sm font-semibold text-purple hover:bg-purple/5"
-              >
-                Crear cuenta
-              </Link>
-            </div>
-          </section>
-        )}
+        <ResenasSection lugarId={site.id} lugarTitulo={site.title} />
       </div>
     </AppShell>
   );

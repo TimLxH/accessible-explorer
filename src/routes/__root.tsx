@@ -141,20 +141,6 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  useEffect(() => {
-    const apply = () => {
-      const hc = window.localStorage.getItem("puriy_high_contrast") === "1";
-      document.documentElement.classList.toggle("high-contrast", hc);
-    };
-    apply();
-    window.addEventListener("puriy:high-contrast-change", apply);
-    window.addEventListener("storage", apply);
-    return () => {
-      window.removeEventListener("puriy:high-contrast-change", apply);
-      window.removeEventListener("storage", apply);
-    };
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
