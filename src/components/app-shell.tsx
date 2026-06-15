@@ -10,6 +10,7 @@ const nav = [
   { to: "/historial", label: "Historial" },
   { to: "/asistente", label: "Asistente" },
   { to: "/navegacion", label: "Navegación" },
+  { to: "/orientacion", label: "Orientación" },
   { to: "/emergencia", label: "Emergencia" },
   { to: "/configuracion", label: "Configuración" },
 ];

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as OrientacionRouteImport } from './routes/orientacion'
 import { Route as NavegacionRouteImport } from './routes/navegacion'
 import { Route as MapaRecorridoRouteImport } from './routes/mapa-recorrido'
 import { Route as LugaresCercanosRouteImport } from './routes/lugares-cercanos'
@@ -28,6 +29,11 @@ import { Route as DetalleIdRouteImport } from './routes/detalle.$id'
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrientacionRoute = OrientacionRouteImport.update({
+  id: '/orientacion',
+  path: '/orientacion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NavegacionRoute = NavegacionRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/lugares-cercanos': typeof LugaresCercanosRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
+  '/orientacion': typeof OrientacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
   '/recorrido/$id': typeof RecorridoIdRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/lugares-cercanos': typeof LugaresCercanosRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
+  '/orientacion': typeof OrientacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
   '/recorrido/$id': typeof RecorridoIdRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/lugares-cercanos': typeof LugaresCercanosRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
+  '/orientacion': typeof OrientacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
   '/recorrido/$id': typeof RecorridoIdRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/lugares-cercanos'
     | '/mapa-recorrido'
     | '/navegacion'
+    | '/orientacion'
     | '/register'
     | '/detalle/$id'
     | '/recorrido/$id'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/lugares-cercanos'
     | '/mapa-recorrido'
     | '/navegacion'
+    | '/orientacion'
     | '/register'
     | '/detalle/$id'
     | '/recorrido/$id'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/lugares-cercanos'
     | '/mapa-recorrido'
     | '/navegacion'
+    | '/orientacion'
     | '/register'
     | '/detalle/$id'
     | '/recorrido/$id'
@@ -220,6 +232,7 @@ export interface RootRouteChildren {
   LugaresCercanosRoute: typeof LugaresCercanosRoute
   MapaRecorridoRoute: typeof MapaRecorridoRoute
   NavegacionRoute: typeof NavegacionRoute
+  OrientacionRoute: typeof OrientacionRoute
   RegisterRoute: typeof RegisterRoute
   DetalleIdRoute: typeof DetalleIdRoute
   RecorridoIdRoute: typeof RecorridoIdRoute
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orientacion': {
+      id: '/orientacion'
+      path: '/orientacion'
+      fullPath: '/orientacion'
+      preLoaderRoute: typeof OrientacionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/navegacion': {
@@ -348,6 +368,7 @@ const rootRouteChildren: RootRouteChildren = {
   LugaresCercanosRoute: LugaresCercanosRoute,
   MapaRecorridoRoute: MapaRecorridoRoute,
   NavegacionRoute: NavegacionRoute,
+  OrientacionRoute: OrientacionRoute,
   RegisterRoute: RegisterRoute,
   DetalleIdRoute: DetalleIdRoute,
   RecorridoIdRoute: RecorridoIdRoute,
