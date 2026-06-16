@@ -28,7 +28,7 @@ function Welcome() {
       {/* Fondo decorativo: estrellas y montañas */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         {/* Gradiente base */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0e27] via-[#10153a] to-[#0a0e27]" />
+        <div className="absolute inset-0 bg-foreground" />
         {/* Glow detrás del logo */}
         <div className="absolute left-1/2 top-[18%] h-64 w-64 -translate-x-1/2 rounded-full bg-[#4ade80]/10 blur-3xl" />
         <div className="absolute left-1/2 top-[18%] h-48 w-48 -translate-x-1/2 rounded-full bg-[#a78bfa]/10 blur-3xl" />

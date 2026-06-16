@@ -103,7 +103,7 @@ function Nav() {
 
       <div
         aria-hidden="true"
-        className="relative h-[45vh] w-full overflow-hidden bg-gradient-to-br from-navy/10 via-purple/5 to-navy/20"
+        className="relative h-[45vh] w-full overflow-hidden bg-muted"
       >
         <div
           className="absolute inset-0 opacity-40"

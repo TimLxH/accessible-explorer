@@ -185,7 +185,7 @@ function MapaRecorrido() {
           })}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-navy/5 via-purple/5 to-navy/10 shadow-sm">
+        <div className="overflow-hidden rounded-2xl border-2 border-border bg-muted shadow-sm">
           <svg
             viewBox="0 0 1000 600"
             preserveAspectRatio="xMidYMid meet"
