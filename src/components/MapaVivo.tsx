@@ -310,18 +310,35 @@ export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
     ctx.restore();
   }
 
+  // Track previous position to derive heading from movement
+  const prevPosRef = useRef<{ lat: number; lng: number } | null>(null);
+
   // Posicionar y rotar la figura del usuario (siempre centro)
   useEffect(() => {
     const fig = figRef.current;
     if (!fig || size.w === 0) return;
     const px = size.w / 2 - 14;
     const py = size.h / 2 - 22;
-    let heading = posicion?.heading;
+
+    // Prioridad 1: heading del GPS si hay velocidad razonable
+    let heading: number | null = posicion?.heading ?? null;
+    const speed = posicion?.speed ?? null;
+    const usableGpsHeading =
+      heading != null && !Number.isNaN(heading) && (speed == null || speed >= 0.5);
+
+    if (!usableGpsHeading && posicion && prevPosRef.current) {
+      const dLng = posicion.lng - prevPosRef.current.lng;
+      const dLat = posicion.lat - prevPosRef.current.lat;
+      if (Math.abs(dLat) + Math.abs(dLng) > 0.000001) {
+        heading = ((Math.atan2(dLng, dLat) * 180) / Math.PI + 360) % 360;
+      }
+    }
     if (heading == null || Number.isNaN(heading)) {
       heading = lastHeadingRef.current;
     } else {
       lastHeadingRef.current = heading;
     }
+    if (posicion) prevPosRef.current = { lat: posicion.lat, lng: posicion.lng };
     fig.style.transform = `translate(${px}px, ${py}px) rotate(${heading}deg)`;
   }, [posicion, size]);
 
