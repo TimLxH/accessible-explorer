@@ -100,7 +100,9 @@ function Home() {
     try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     stopSpeaking();
 
-    const rec = getRecognition({ interim: false, continuous: false });
+    // interim=true + continuous=true: evalúa el texto conforme el usuario habla
+    // para disparar la acción al instante, sin esperar a que termine la frase.
+    const rec = getRecognition({ interim: true, continuous: true });
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       setStatus("idle");
@@ -111,25 +113,32 @@ function Home() {
     setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
     let decided = false;
 
+    const fire = (tile: Tile) => {
+      if (decided) return;
+      decided = true;
+      setFeedback(`Abriendo: ${tile.spoken}`);
+      try { rec.onresult = null; rec.onend = null; rec.onerror = null; } catch { /* ignore */ }
+      try { rec.abort(); } catch { /* ignore */ }
+      try { rec.stop(); } catch { /* ignore */ }
+      setStatus("idle");
+      navigate({ to: tile.to });
+    };
+
     rec.onresult = (e: any) => {
-      let transcript = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        transcript += e.results[i][0].transcript + " ";
+      if (decided) return;
+      // Evalúa todos los resultados (intermedios y finales) en tiempo real.
+      let combined = "";
+      for (let i = 0; i < e.results.length; i++) {
+        combined += e.results[i][0].transcript + " ";
       }
-      transcript = transcript.trim();
-      if (!transcript || decided) return;
+      const transcript = combined.trim();
+      if (!transcript) return;
       setFeedback(`Te escuché: "${transcript}"`);
       const tile = matchTile(transcript);
-      if (tile) {
-        decided = true;
-        setFeedback(`Abriendo: ${tile.spoken}`);
-        try { rec.stop(); } catch { /* ignore */ }
-        navigate({ to: tile.to });
-      } else {
-        setFeedback(`No reconocí "${transcript}". Toca el botón e inténtalo otra vez.`);
-      }
+      if (tile) fire(tile);
     };
     rec.onerror = (e: any) => {
+      if (decided) return;
       if (e?.error === "no-speech") {
         setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
       } else if (e?.error === "not-allowed") {
@@ -140,6 +149,7 @@ function Home() {
       setStatus("idle");
     };
     rec.onend = () => {
+      if (decided) return;
       setStatus((s) => (s === "listening" ? "idle" : s));
     };
     recRef.current = rec;
