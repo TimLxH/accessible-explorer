@@ -95,7 +95,7 @@ function Home() {
       return;
     }
 
-    const rec = getRecognition({ interim: true, continuous: true });
+    const rec = getRecognition({ interim: false, continuous: false });
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       return;
@@ -109,46 +109,58 @@ function Home() {
     const outro = "Ahora dime tu elección.";
 
     speakSequence([intro, ...numbered, outro], () => {
-      setStatus("listening");
-      setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
-      let decided = false;
+      // Asegura que el TTS terminó por completo antes de escuchar,
+      // para que el micrófono no capture la propia voz del menú.
+      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+      stopSpeaking();
 
-      rec.onresult = (e: any) => {
-        let combined = "";
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          combined += e.results[i][0].transcript + " ";
+      // Pequeño respiro para liberar el audio antes de abrir el micrófono.
+      window.setTimeout(() => {
+        setStatus("listening");
+        setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
+        let decided = false;
+
+        rec.onresult = (e: any) => {
+          // Solo resultados finales para evitar dobles disparos.
+          let transcript = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) transcript += e.results[i][0].transcript + " ";
+          }
+          transcript = transcript.trim();
+          if (!transcript || decided) return;
+          setFeedback(`Te escuché: "${transcript}"`);
+          const tile = matchTile(transcript);
+          if (tile) {
+            decided = true;
+            setFeedback(`Abriendo: ${tile.spoken}`);
+            try { rec.stop(); } catch { /* ignore */ }
+            speakSequence([`Abriendo ${tile.spoken}`], () => {});
+            navigate({ to: tile.to });
+          } else {
+            setFeedback(`No reconocí "${transcript}". Toca el botón e inténtalo otra vez.`);
+          }
+        };
+        rec.onerror = (e: any) => {
+          if (e?.error === "no-speech") {
+            setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
+          } else if (e?.error === "not-allowed") {
+            setFeedback("Permiso de micrófono denegado. Habilítalo en tu navegador.");
+          } else if (e?.error !== "aborted") {
+            setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
+          }
+          setStatus("idle");
+        };
+        rec.onend = () => {
+          setStatus("idle");
+        };
+        recRef.current = rec;
+        try {
+          rec.start();
+        } catch {
+          setStatus("idle");
+          setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
         }
-        const transcript = combined.trim();
-        if (transcript) setFeedback(`Te escuché: "${transcript}"`);
-        const tile = matchTile(transcript);
-        if (tile && !decided) {
-          decided = true;
-          setFeedback(`Abriendo: ${tile.spoken}`);
-          try { rec.stop(); } catch { /* ignore */ }
-          speakSequence([`Abriendo ${tile.spoken}`], () => {});
-          navigate({ to: tile.to });
-        }
-      };
-      rec.onerror = (e: any) => {
-        if (e?.error === "no-speech") {
-          setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
-        } else if (e?.error === "not-allowed") {
-          setFeedback("Permiso de micrófono denegado. Habilítalo en tu navegador.");
-        } else {
-          setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
-        }
-        setStatus("idle");
-      };
-      rec.onend = () => {
-        setStatus("idle");
-      };
-      recRef.current = rec;
-      try {
-        rec.start();
-      } catch (err) {
-        setStatus("idle");
-        setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
-      }
+      }, 350);
     });
   }
 
