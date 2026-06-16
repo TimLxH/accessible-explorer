@@ -25,6 +25,7 @@ const tiles: Tile[] = [
   { to: "/explorar", spoken: "Búsqueda de destino", keywords: ["búsqueda", "busqueda", "destino", "explorar", "buscar"] },
   { to: "/lugares-cercanos", spoken: "Lugares cercanos", keywords: ["cercano", "cercanos", "cerca", "lugares"] },
   { to: "/asistente", spoken: "Chatbot", keywords: ["chatbot", "asistente", "ayudante"] },
+  { to: "/ojos-abiertos", spoken: "Ojos Abiertos, cámara con inteligencia artificial", keywords: ["ojos", "abiertos", "camara", "cámara", "ver", "describir", "vision", "visión"] },
   { to: "/favoritos", spoken: "Favoritos", keywords: ["favorito", "favoritos"] },
   { to: "/historial", spoken: "Historial", keywords: ["historial", "recientes"] },
   { to: "/configuracion", spoken: "Configuración", keywords: ["configuración", "configuracion", "ajustes"] },
