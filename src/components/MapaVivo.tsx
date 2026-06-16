@@ -177,14 +177,16 @@ export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
     const toY = (lat: number) =>
       H / 2 - ((lat - center.lat) * METERS_PER_DEG) / METROS_POR_PIXEL;
 
-    // 3. Burbuja de precisión
+    // 3. Burbuja de precisión (en posición GPS real, no en snap)
     if (posicion) {
       const r = Math.max(8, posicion.accuracy / METROS_POR_PIXEL);
+      const bx = toX(posicion.lng);
+      const by = toY(posicion.lat);
       ctx.fillStyle = "rgba(83,74,183,0.08)";
       ctx.strokeStyle = "rgba(83,74,183,0.3)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(W / 2, H / 2, r, 0, Math.PI * 2);
+      ctx.arc(bx, by, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
     }
