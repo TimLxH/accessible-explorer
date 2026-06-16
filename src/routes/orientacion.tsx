@@ -694,26 +694,27 @@ function ProgresoYMapa({
   nodos,
   posicionActual,
   nodoActivoId,
+  modoSimulacion,
 }: {
   nodos: Nodo[];
   posicionActual: { lat: number; lng: number; accuracy: number } | null;
   nodoActivoId: number | null;
+  modoSimulacion: boolean;
 }) {
   const activeIdx = nodoActivoId == null ? -1 : nodos.findIndex((n) => n.id === nodoActivoId);
   const total = nodos.length;
   const activeNodo = activeIdx >= 0 ? nodos[activeIdx] : null;
 
-  const distTotalRestante = useMemo(() => {
+  const distTotal = useMemo(() => {
     if (total < 2) return 0;
-    const desde = activeIdx >= 0 ? activeIdx : 0;
     let sum = 0;
-    for (let i = desde; i < total - 1; i++) {
+    for (let i = 0; i < total - 1; i++) {
       sum += haversineMeters(nodos[i].lat, nodos[i].lng, nodos[i + 1].lat, nodos[i + 1].lng);
     }
     return sum;
-  }, [nodos, activeIdx, total]);
+  }, [nodos, total]);
 
-  const minutosRestantes = Math.max(0, Math.round(distTotalRestante / 0.8 / 60));
+  const minutosRestantes = Math.max(0, Math.round(distTotal / 0.8 / 60));
   const progreso = total > 1 && activeIdx >= 0 ? activeIdx / (total - 1) : 0;
 
   return (
@@ -724,7 +725,9 @@ function ProgresoYMapa({
             ? `Nodo ${activeIdx + 1} de ${total} — ${activeNodo.nombre}`
             : `Recorrido: ${total} nodos`}
         </p>
-        <p className="text-sm text-muted-foreground">~{minutosRestantes} min restantes</p>
+        <p className="text-sm text-muted-foreground">
+          ~{minutosRestantes} min · {Math.round(distTotal)} m totales
+        </p>
       </div>
       <div
         role="progressbar"
@@ -742,10 +745,48 @@ function ProgresoYMapa({
         nodos={nodos}
         posicion={posicionActual}
         nodoActivoId={nodoActivoId}
-        modoSimulacion={false}
+        modoSimulacion={modoSimulacion}
       />
-
     </section>
   );
 }
+
+function GpsBadge({
+  posicion,
+  activo,
+  simular,
+}: {
+  posicion: { lat: number; lng: number; accuracy: number } | null;
+  activo: boolean;
+  simular: boolean;
+}) {
+  if (!activo || simular) return null;
+  const acc = posicion?.accuracy;
+  let color = "bg-red-500";
+  let label = "GPS débil · Activa el modo simulación";
+  let pulse = false;
+  if (acc != null) {
+    if (acc < 10) {
+      color = "bg-green-500";
+      label = `GPS · Alta precisión ±${acc.toFixed(1)}m`;
+      pulse = true;
+    } else if (acc <= 30) {
+      color = "bg-yellow-500";
+      label = `GPS · Precisión media ±${acc.toFixed(1)}m`;
+    } else {
+      color = "bg-red-500";
+      label = `GPS débil ±${acc.toFixed(1)}m · Activa el modo simulación`;
+    }
+  }
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground"
+    >
+      <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} ${pulse ? "animate-pulse" : ""}`} aria-hidden="true" />
+      <span>{label}</span>
+    </div>
+  );
+}
+
 
