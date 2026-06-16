@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2 } from "lucide-react";
+import { Heart, MapPin, ChevronDown, Volume2, Navigation, AlertTriangle, Loader2, ShieldCheck, Accessibility, Cross } from "lucide-react";
 import { useState } from "react";
 import { speak } from "@/lib/speech";
 import { AppShell } from "@/components/app-shell";
@@ -136,6 +136,49 @@ function Detalle() {
           </span>
         </div>
         <p className="mt-4 text-base leading-relaxed text-foreground">{site.description}</p>
+
+        <section
+          aria-labelledby="zonas-seguras-title"
+          className="mt-6 rounded-2xl border-2 border-purple/40 bg-purple/5 p-5"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-6 w-6 text-purple" aria-hidden="true" />
+              <Accessibility className="h-6 w-6 text-purple" aria-hidden="true" />
+              <Cross className="h-5 w-5 text-purple" aria-hidden="true" />
+              <h3 id="zonas-seguras-title" className="text-lg font-bold text-foreground">
+                Zonas Seguras y Accesibilidad
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                speak(
+                  `Zonas seguras y accesibilidad en ${site.title}. Rutas sin desniveles: el recorrido principal cuenta con caminos planos y sin escalones, aptos para sillas de ruedas y personas con movilidad reducida. Zonas de descanso con asientos: encontrarás bancas y áreas de descanso distribuidas a lo largo del recorrido. Puestos de asistencia más cercanos: hay personal de apoyo y un puesto de primeros auxilios disponibles en la entrada principal.`,
+                )
+              }
+              aria-label={`Escuchar información de zonas seguras y accesibilidad de ${site.title}`}
+              className="inline-flex items-center gap-2 rounded-xl bg-purple px-3 py-2 text-sm font-semibold text-purple-foreground shadow hover:bg-purple/90"
+            >
+              <Volume2 className="h-4 w-4" aria-hidden="true" /> Escuchar
+            </button>
+          </div>
+          <ul className="mt-4 space-y-3 text-sm text-foreground">
+            <li className="flex items-start gap-2">
+              <Accessibility className="mt-0.5 h-5 w-5 shrink-0 text-purple" aria-hidden="true" />
+              <span><strong>Rutas sin desniveles:</strong> recorrido principal sin escalones, apto para sillas de ruedas y movilidad reducida.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-purple" aria-hidden="true" />
+              <span><strong>Zonas de descanso con asientos:</strong> bancas distribuidas a lo largo del recorrido para tomar pausas.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Cross className="mt-0.5 h-5 w-5 shrink-0 text-purple" aria-hidden="true" />
+              <span><strong>Puestos de asistencia más cercanos:</strong> personal de apoyo y primeros auxilios en la entrada principal.</span>
+            </li>
+          </ul>
+        </section>
+
 
         <div className="mt-6 space-y-3">
           <Section title="Historia del lugar" defaultOpen>{site.history}</Section>
