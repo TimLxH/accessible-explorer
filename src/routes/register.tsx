@@ -34,7 +34,8 @@ function Register() {
     });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      console.error("[register] signUp", error);
+      setError("No se pudo crear tu cuenta. Verifica tus datos e intenta de nuevo.");
       return;
     }
     nav({ to: "/home" });
@@ -46,7 +47,8 @@ function Register() {
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
     setGoogleLoading(false);
     if (error) {
-      setError(error.message);
+      console.error("[register] signInWithOAuth google", error);
+      setError("No se pudo continuar con Google. Por favor intenta de nuevo.");
     }
   }
 
