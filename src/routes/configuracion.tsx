@@ -203,13 +203,14 @@ function Config() {
           </Link>
         </Section>
 
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={handleLogout}
           aria-label="Cerrar sesión y volver a la pantalla de bienvenida"
           className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-destructive bg-white py-4 font-semibold text-destructive hover:bg-destructive/5"
         >
           <LogOut className="h-5 w-5" aria-hidden="true" /> Cerrar sesión
-        </Link>
+        </button>
       </div>
     </AppShell>
   );
