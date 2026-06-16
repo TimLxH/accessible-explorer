@@ -13,7 +13,7 @@ type Tile = {
 const tiles: Tile[] = [
   { to: "/explorar", spoken: "Búsqueda de destino", keywords: ["búsqueda", "busqueda", "destino", "explorar", "buscar"] },
   { to: "/lugares-cercanos", spoken: "Lugares cercanos", keywords: ["cercano", "cercanos", "cerca", "lugares"] },
-  { to: "/asistente", spoken: "Asistente de voz", keywords: ["asistente", "ayudante"] },
+  { to: "/asistente", spoken: "Chatbot", keywords: ["chatbot", "asistente", "ayudante"] },
   { to: "/favoritos", spoken: "Favoritos", keywords: ["favorito", "favoritos"] },
   { to: "/historial", spoken: "Historial", keywords: ["historial", "recientes"] },
   { to: "/emergencia", spoken: "Emergencia", keywords: ["emergencia", "ayuda", "urgencia", "auxilio"] },
