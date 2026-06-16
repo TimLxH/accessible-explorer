@@ -157,16 +157,19 @@ function Orientacion() {
 function NavegacionTab() {
   const [nodos, setNodos] = useState<Nodo[]>(() => loadNodos());
   const [activo, setActivo] = useState(false);
-  const [simular, setSimular] = useState(false);
-  const [posicion, setPosicion] = useState<{ lat: number; lng: number; accuracy: number } | null>(
-    null,
-  );
+  const [posicion, setPosicion] = useState<{
+    lat: number;
+    lng: number;
+    accuracy: number;
+    heading: number | null;
+  } | null>(null);
   const [mensaje, setMensaje] = useState<string>("Pulsa 'Iniciar Recorrido' para comenzar.");
   const [error, setError] = useState<string | null>(null);
   const [nodoActivoId, setNodoActivoId] = useState<number | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const ultimoNodoRef = useRef<number | null>(null);
   const nodosRef = useRef<Nodo[]>(nodos);
+  const { smooth, reset } = useSmoothedGPS();
 
   useEffect(() => {
     nodosRef.current = nodos;
@@ -200,42 +203,42 @@ function NavegacionTab() {
       speak(m);
       return;
     }
-
-    if (simular) {
-      const primero = nodosRef.current[0];
-      setPosicion({ lat: primero.lat, lng: primero.lng, accuracy: 1 });
-      evaluarPosicion(primero.lat, primero.lng);
-      setActivo(true);
-      const m =
-        "Modo simulación activo. Usa el botón 'Simular siguiente nodo' para avanzar por la ruta.";
-      setMensaje(m);
-      speak(m);
-      return;
-    }
-
     if (!("geolocation" in navigator)) {
-      const m = "Tu dispositivo no admite geolocalización. Activa el modo simulación para probar.";
+      const m = "Tu dispositivo no admite geolocalización. Prueba desde un móvil.";
       setError(m);
       speak(m);
       return;
     }
+
+    reset();
     speak("Recorrido iniciado. Caminando entre puntos de referencia.");
     setMensaje("Caminando entre puntos de referencia.");
     setActivo(true);
+
     try {
       watchIdRef.current = navigator.geolocation.watchPosition(
         (pos) => {
-          const { latitude, longitude, accuracy } = pos.coords;
-          setPosicion({ lat: latitude, lng: longitude, accuracy });
-          evaluarPosicion(latitude, longitude);
+          const raw = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            heading: pos.coords.heading,
+          };
+          if (raw.accuracy > 80) return;
+          const suave = smooth(raw);
+          setPosicion({
+            lat: suave.lat,
+            lng: suave.lng,
+            accuracy: raw.accuracy,
+            heading: suave.heading,
+          });
+          evaluarPosicion(suave.lat, suave.lng, raw.accuracy);
         },
         (err) => {
-          setError(
-            `Error de GPS (${err.code}): ${err.message}. Puedes activar 'Modo simulación' para probar.`,
-          );
+          setError(`GPS (${err.code}): ${err.message}`);
           speak("Error obteniendo la ubicación.");
         },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
       );
     } catch (e) {
       setError(`No se pudo iniciar el GPS: ${(e as Error).message}`);
@@ -257,7 +260,8 @@ function NavegacionTab() {
     stopSpeaking();
   }
 
-  function evaluarPosicion(lat: number, lng: number) {
+  function evaluarPosicion(lat: number, lng: number, accuracy = 15) {
+    const umbral = Math.min(40, Math.max(12, accuracy * 1.5));
     let nodoCercano: Nodo | null = null;
     let distMin = Infinity;
     for (const n of nodosRef.current) {
@@ -267,11 +271,11 @@ function NavegacionTab() {
         nodoCercano = n;
       }
     }
-    if (nodoCercano && distMin < 4) {
+    if (nodoCercano && distMin < umbral) {
       if (ultimoNodoRef.current !== nodoCercano.id) {
         ultimoNodoRef.current = nodoCercano.id;
         setNodoActivoId(nodoCercano.id);
-        const texto = `Estás pasando por: ${nodoCercano.nombre}`;
+        const texto = `Estás en: ${nodoCercano.nombre}. Distancia: ${Math.round(distMin)} metros.`;
         setMensaje(texto);
         speak(texto);
       }
@@ -279,28 +283,11 @@ function NavegacionTab() {
       if (ultimoNodoRef.current !== null) {
         ultimoNodoRef.current = null;
         setNodoActivoId(null);
-        const texto = "Caminando entre puntos de referencia.";
+        const texto = "Caminando. Siguiente punto de referencia cercano.";
         setMensaje(texto);
         speak(texto);
       }
     }
-  }
-
-  function simularSiguienteNodo() {
-    if (nodosRef.current.length === 0) return;
-    const actual = ultimoNodoRef.current;
-    const idx = actual == null ? 0 : nodosRef.current.findIndex((n) => n.id === actual);
-    const desde = nodosRef.current[idx >= 0 ? idx : 0];
-    const siguiente = nodosRef.current[(idx + 1) % nodosRef.current.length];
-    // Paso intermedio para que la figura no teleporte
-    const midLat = (desde.lat + siguiente.lat) / 2;
-    const midLng = (desde.lng + siguiente.lng) / 2;
-    setPosicion({ lat: midLat, lng: midLng, accuracy: 1 });
-    window.setTimeout(() => {
-      setPosicion({ lat: siguiente.lat, lng: siguiente.lng, accuracy: 1 });
-      ultimoNodoRef.current = null;
-      evaluarPosicion(siguiente.lat, siguiente.lng);
-    }, 400);
   }
 
   return (
@@ -313,6 +300,8 @@ function NavegacionTab() {
         </p>
       </header>
 
+      <ProgresoBar nodos={nodos} nodoActivoId={nodoActivoId} />
+
       {/* Región accesible con anuncios */}
       <div
         role="status"
@@ -324,17 +313,14 @@ function NavegacionTab() {
         <p className="mt-1 text-2xl font-bold leading-tight">{mensaje}</p>
       </div>
 
-      <ProgresoYMapa
+      <MapaVivo
         nodos={nodos}
-        posicionActual={posicion}
+        posicion={posicion}
         nodoActivoId={nodoActivoId}
-        modoSimulacion={simular}
+        activo={activo}
       />
 
-      <GpsBadge posicion={posicion} activo={activo} simular={simular} />
-
-
-
+      <GpsBadge posicion={posicion} activo={activo} />
 
       {error && (
         <p
@@ -344,24 +330,6 @@ function NavegacionTab() {
           {error}
         </p>
       )}
-
-      <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
-        <Label htmlFor="modo-simulacion" className="flex flex-col">
-          <span className="text-base font-semibold">Modo simulación</span>
-          <span className="text-sm text-muted-foreground">
-            Útil cuando el GPS no está disponible (por ejemplo, en este preview).
-          </span>
-        </Label>
-        <Switch
-          id="modo-simulacion"
-          checked={simular}
-          onCheckedChange={(v) => {
-            if (!activo) setSimular(v);
-          }}
-          disabled={activo}
-          aria-label="Activar modo simulación de recorrido"
-        />
-      </div>
 
       <div className="flex flex-col gap-3">
         {!activo ? (
@@ -374,57 +342,20 @@ function NavegacionTab() {
             Iniciar Recorrido
           </Button>
         ) : (
-          <>
-            <Button
-              onClick={detener}
-              aria-label="Detener recorrido y dejar de rastrear ubicación"
-              className="h-20 w-full bg-destructive text-xl font-bold text-destructive-foreground hover:bg-destructive/90"
-            >
-              <Square className="mr-3 h-7 w-7" aria-hidden="true" />
-              Detener Recorrido
-            </Button>
-            {simular && (
-              <Button
-                onClick={simularSiguienteNodo}
-                aria-label="Simular avance hacia el siguiente nodo"
-                variant="outline"
-                className="h-16 w-full text-base font-semibold"
-              >
-                <MousePointer2 className="mr-2 h-5 w-5" aria-hidden="true" />
-                Simular siguiente nodo
-              </Button>
-            )}
-          </>
+          <Button
+            onClick={detener}
+            aria-label="Detener recorrido y dejar de rastrear ubicación"
+            className="h-20 w-full bg-destructive text-xl font-bold text-destructive-foreground hover:bg-destructive/90"
+          >
+            <Square className="mr-3 h-7 w-7" aria-hidden="true" />
+            Detener Recorrido
+          </Button>
         )}
       </div>
-
-      <section aria-labelledby="estado-gps" className="rounded-lg border border-border p-4">
-        <h3 id="estado-gps" className="text-lg font-semibold">
-          Posición actual
-        </h3>
-        {posicion ? (
-          <dl className="mt-2 grid grid-cols-1 gap-1 text-base sm:grid-cols-3">
-            <div>
-              <dt className="text-muted-foreground">Latitud</dt>
-              <dd className="font-mono">{posicion.lat.toFixed(6)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Longitud</dt>
-              <dd className="font-mono">{posicion.lng.toFixed(6)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Precisión</dt>
-              <dd className="font-mono">±{posicion.accuracy.toFixed(1)} m</dd>
-            </div>
-          </dl>
-        ) : (
-          <p className="mt-2 text-base text-muted-foreground">Sin lectura todavía.</p>
-        )}
-      </section>
-
     </div>
   );
 }
+
 
 // ===========================================================
 // Pestaña 2: Administrador (Mapeo)
