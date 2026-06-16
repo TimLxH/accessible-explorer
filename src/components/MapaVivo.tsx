@@ -31,6 +31,49 @@ function truncar(s: string, n = 18) {
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
 }
 
+// Haversine local (no tocar la del archivo principal)
+function distMetros(aLat: number, aLng: number, bLat: number, bLng: number) {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+// Proyecta la posición sobre el segmento de ruta más cercano.
+// Si está a más de 25 m de la ruta, devuelve la posición real.
+function snapToRoute(
+  pos: { lat: number; lng: number },
+  nodos: NodoVivo[],
+): { lat: number; lng: number } {
+  if (nodos.length < 2) return { lat: pos.lat, lng: pos.lng };
+  let mejorDist = Infinity;
+  let mejorPunto = { lat: pos.lat, lng: pos.lng };
+  for (let i = 0; i < nodos.length - 1; i++) {
+    const A = nodos[i];
+    const B = nodos[i + 1];
+    const dx = B.lng - A.lng;
+    const dy = B.lat - A.lat;
+    const len2 = dx * dx + dy * dy;
+    if (len2 === 0) continue;
+    const t = Math.max(
+      0,
+      Math.min(1, ((pos.lng - A.lng) * dx + (pos.lat - A.lat) * dy) / len2),
+    );
+    const proy = { lat: A.lat + t * dy, lng: A.lng + t * dx };
+    const d = distMetros(pos.lat, pos.lng, proy.lat, proy.lng);
+    if (d < mejorDist) {
+      mejorDist = d;
+      mejorPunto = proy;
+    }
+  }
+  if (mejorDist < 25) return mejorPunto;
+  return { lat: pos.lat, lng: pos.lng };
+}
+
 export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
