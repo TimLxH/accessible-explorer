@@ -16,7 +16,7 @@ import { getRecognition, stopSpeaking } from "@/lib/speech";
 import { getVoiceEnabled, VOICE_MENU_RATE } from "@/lib/voice-settings";
 
 export const Route = createFileRoute("/home")({
-  head: () => ({ meta: [{ title: "Inicio — Puriy Ayni" }] }),
+  head: () => ({ meta: [{ title: "Inicio — Pury Ayni" }] }),
   component: Home,
 });
 

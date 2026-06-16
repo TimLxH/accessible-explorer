@@ -5,7 +5,7 @@ import logo from "@/assets/puriy-ayni-logo-v2.png.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Puriy Ayni" },
+      { title: "Pury Ayni" },
       { name: "description", content: "App de turismo accesible para todos." },
     ],
   }),
@@ -17,7 +17,7 @@ function Welcome() {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(
-      "Bienvenido a Puriy Ayni, tu asistente de viaje accesible. Descubre lugares accesibles, con guía de voz y rutas pensadas para todos. Toca el botón de iniciar sesión para entrar a tu cuenta, o el botón de registrarse para crear una nueva.",
+      "Bienvenido a Pury Ayni, tu asistente de viaje accesible. Descubre lugares accesibles, con guía de voz y rutas pensadas para todos. Toca el botón de iniciar sesión para entrar a tu cuenta, o el botón de registrarse para crear una nueva.",
     );
     u.lang = "es-ES";
     window.speechSynthesis.speak(u);
@@ -76,7 +76,7 @@ function Welcome() {
           />
         </div>
 
-        {/* Título PURIY AYNI con efecto dorado */}
+        {/* Título PURY AYNI con efecto dorado */}
         <h1
           className="mb-3 text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl"
           style={{
@@ -87,7 +87,7 @@ function Welcome() {
             filter: "drop-shadow(0 2px 4px rgba(201,168,76,0.3))",
           }}
         >
-          PURIY AYNI
+          PURY AYNI
         </h1>
 
         <p className="mb-2 max-w-md text-lg text-white/85">
