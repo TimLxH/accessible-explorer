@@ -84,9 +84,34 @@ function haversineMeters(
   return R * c;
 }
 
+// Filtro de suavizado tipo EMA (Kalman simplificado)
+function useSmoothedGPS() {
+  const smoothRef = useRef<{ lat: number; lng: number; heading: number | null } | null>(null);
+
+  function smooth(raw: { lat: number; lng: number; heading: number | null; accuracy: number }) {
+    if (!smoothRef.current) {
+      smoothRef.current = { lat: raw.lat, lng: raw.lng, heading: raw.heading };
+      return smoothRef.current;
+    }
+    const alpha = raw.accuracy < 10 ? 0.6 : raw.accuracy < 25 ? 0.35 : 0.15;
+    smoothRef.current = {
+      lat: smoothRef.current.lat * (1 - alpha) + raw.lat * alpha,
+      lng: smoothRef.current.lng * (1 - alpha) + raw.lng * alpha,
+      heading: raw.heading ?? smoothRef.current.heading,
+    };
+    return smoothRef.current;
+  }
+
+  function reset() {
+    smoothRef.current = null;
+  }
+  return { smooth, reset };
+}
+
 // ===========================================================
 // Componente principal
 // ===========================================================
+
 
 function Orientacion() {
   return (
