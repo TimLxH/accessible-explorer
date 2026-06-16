@@ -83,12 +83,12 @@ function Register() {
         </Link>
         <div
           aria-hidden="true"
-          className="mb-4 grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-white/5 shadow-[0_0_30px_rgba(74,222,128,0.12)] ring-1 ring-white/20 backdrop-blur-sm"
+          className="mb-4 grid aspect-square h-24 w-24 place-items-center overflow-hidden rounded-full bg-white/5 shadow-[0_0_30px_rgba(74,222,128,0.12)] ring-1 ring-white/20 backdrop-blur-sm"
         >
           <img
             src={logo.url}
             alt=""
-            className="h-20 w-20 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]"
+            className="h-full w-full object-cover drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]"
           />
         </div>
         <h1

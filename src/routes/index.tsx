@@ -67,12 +67,12 @@ function Welcome() {
         {/* Logo con glow */}
         <div
           aria-hidden="true"
-          className="relative mb-6 grid h-40 w-40 place-items-center overflow-hidden rounded-full bg-white/5 shadow-[0_0_40px_rgba(74,222,128,0.15)] ring-1 ring-white/20 backdrop-blur-sm"
+          className="relative mb-6 grid aspect-square h-40 w-40 place-items-center overflow-hidden rounded-full bg-white/5 shadow-[0_0_40px_rgba(74,222,128,0.15)] ring-1 ring-white/20 backdrop-blur-sm"
         >
           <img
             src={logo.url}
             alt=""
-            className="h-32 w-32 object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]"
+            className="h-full w-full object-cover drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]"
           />
         </div>
 
