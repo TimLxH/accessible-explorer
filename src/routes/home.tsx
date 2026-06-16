@@ -93,12 +93,86 @@ function Home() {
   const [status, setStatus] = useState<"idle" | "reading" | "listening">("idle");
   const [feedback, setFeedback] = useState<string>("");
   const recRef = useRef<any>(null);
+  const cancelTTSRef = useRef<boolean>(false);
+
+  function startListening(rec: any) {
+    // Asegura que el TTS terminó por completo antes de escuchar,
+    // para que el micrófono no capture la propia voz del menú.
+    try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+    stopSpeaking();
+
+    // Pequeño respiro para liberar el audio antes de abrir el micrófono.
+    window.setTimeout(() => {
+      setStatus("listening");
+      setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
+      let decided = false;
+
+      rec.onresult = (e: any) => {
+        // Solo resultados finales para evitar dobles disparos.
+        let transcript = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) transcript += e.results[i][0].transcript + " ";
+        }
+        transcript = transcript.trim();
+        if (!transcript || decided) return;
+        setFeedback(`Te escuché: "${transcript}"`);
+        const tile = matchTile(transcript);
+        if (tile) {
+          decided = true;
+          setFeedback(`Abriendo: ${tile.spoken}`);
+          try { rec.stop(); } catch { /* ignore */ }
+          speakSequence([`Abriendo ${tile.spoken}`], () => {}, cancelTTSRef);
+          navigate({ to: tile.to });
+        } else {
+          setFeedback(`No reconocí "${transcript}". Toca el botón e inténtalo otra vez.`);
+        }
+      };
+      rec.onerror = (e: any) => {
+        if (e?.error === "no-speech") {
+          setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
+        } else if (e?.error === "not-allowed") {
+          setFeedback("Permiso de micrófono denegado. Habilítalo en tu navegador.");
+        } else if (e?.error !== "aborted") {
+          setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
+        }
+        setStatus("idle");
+      };
+      rec.onend = () => {
+        setStatus("idle");
+      };
+      recRef.current = rec;
+      try {
+        rec.start();
+      } catch {
+        setStatus("idle");
+        setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
+      }
+    }, 350);
+  }
 
   function startVoiceMenu() {
     if (!getVoiceEnabled()) {
       setFeedback("La guía por voz está desactivada. Actívala en Configuración.");
       return;
     }
+
+    // Si está leyendo: interrumpir TTS e ir directo a escuchar
+    if (status === "reading") {
+      cancelTTSRef.current = true;
+      window.speechSynthesis.cancel();
+      stopSpeaking();
+      setFeedback("Interrumpido. Escuchando tu elección…");
+      const rec = getRecognition({ interim: false, continuous: false });
+      if (!rec) {
+        setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
+        setStatus("idle");
+        return;
+      }
+      startListening(rec);
+      return;
+    }
+
+    // Si está escuchando o cualquier otro estado activo: detener todo
     if (status !== "idle") {
       stopSpeaking();
       recRef.current?.stop?.();
@@ -114,66 +188,15 @@ function Home() {
     }
 
     setStatus("reading");
-    setFeedback("Leyendo opciones disponibles…");
+    setFeedback("Leyendo opciones disponibles… Toca de nuevo para interrumpir y hablar.");
 
     const intro = "Estas son las opciones disponibles. Di el número o el nombre de la que deseas abrir.";
     const numbered = tiles.map((t, i) => `Opción ${i + 1}: ${t.spoken}.`);
     const outro = "Ahora dime tu elección.";
 
     speakSequence([intro, ...numbered, outro], () => {
-      // Asegura que el TTS terminó por completo antes de escuchar,
-      // para que el micrófono no capture la propia voz del menú.
-      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-      stopSpeaking();
-
-      // Pequeño respiro para liberar el audio antes de abrir el micrófono.
-      window.setTimeout(() => {
-        setStatus("listening");
-        setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
-        let decided = false;
-
-        rec.onresult = (e: any) => {
-          // Solo resultados finales para evitar dobles disparos.
-          let transcript = "";
-          for (let i = e.resultIndex; i < e.results.length; i++) {
-            if (e.results[i].isFinal) transcript += e.results[i][0].transcript + " ";
-          }
-          transcript = transcript.trim();
-          if (!transcript || decided) return;
-          setFeedback(`Te escuché: "${transcript}"`);
-          const tile = matchTile(transcript);
-          if (tile) {
-            decided = true;
-            setFeedback(`Abriendo: ${tile.spoken}`);
-            try { rec.stop(); } catch { /* ignore */ }
-            speakSequence([`Abriendo ${tile.spoken}`], () => {});
-            navigate({ to: tile.to });
-          } else {
-            setFeedback(`No reconocí "${transcript}". Toca el botón e inténtalo otra vez.`);
-          }
-        };
-        rec.onerror = (e: any) => {
-          if (e?.error === "no-speech") {
-            setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
-          } else if (e?.error === "not-allowed") {
-            setFeedback("Permiso de micrófono denegado. Habilítalo en tu navegador.");
-          } else if (e?.error !== "aborted") {
-            setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
-          }
-          setStatus("idle");
-        };
-        rec.onend = () => {
-          setStatus("idle");
-        };
-        recRef.current = rec;
-        try {
-          rec.start();
-        } catch {
-          setStatus("idle");
-          setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
-        }
-      }, 350);
-    });
+      startListening(rec);
+    }, cancelTTSRef);
   }
 
 
@@ -194,7 +217,7 @@ function Home() {
               status === "idle"
                 ? "Activar menú por voz: lee las opciones y escucha tu elección"
                 : status === "reading"
-                  ? "Leyendo opciones. Toca para cancelar"
+                  ? "Interrumpir lectura y hablar ahora"
                   : "Escuchando tu voz. Toca para cancelar"
             }
             aria-pressed={status !== "idle"}
@@ -208,7 +231,7 @@ function Home() {
             {status === "idle"
               ? "Menú por voz"
               : status === "reading"
-                ? "Leyendo…"
+                ? "Leyendo… (tocar para hablar)"
                 : "Escuchando…"}
           </button>
         </div>
