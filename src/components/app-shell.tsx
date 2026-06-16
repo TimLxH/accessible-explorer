@@ -65,29 +65,42 @@ export function AppShell({
         <h1 className="truncate text-center text-base font-semibold lg:text-left">
           {title}
         </h1>
-        <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
-          {nav.map((n) => (
+        <div className="flex items-center gap-2">
+          <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
+            {nav.map((n) => (
+              <Link
+                key={n.to}
+                to={n.to}
+                aria-label={`Ir a ${n.label}`}
+                className="rounded-md px-3 py-1.5 text-sm hover:bg-white/10"
+                activeProps={{
+                  className: "rounded-md px-3 py-1.5 text-sm bg-white/15 font-semibold",
+                  "aria-current": "page",
+                }}
+              >
+                {n.label}
+              </Link>
+            ))}
             <Link
-              key={n.to}
-              to={n.to}
-              aria-label={`Ir a ${n.label}`}
-              className="rounded-md px-3 py-1.5 text-sm hover:bg-white/10"
-              activeProps={{
-                className: "rounded-md px-3 py-1.5 text-sm bg-white/15 font-semibold",
-                "aria-current": "page",
-              }}
+              to="/configuracion"
+              className="ml-1 grid h-11 w-11 place-items-center rounded-md hover:bg-white/10"
+              aria-label="Ir a configuración"
             >
-              {n.label}
+              <Settings className="h-5 w-5" aria-hidden="true" />
             </Link>
-          ))}
-          <Link
-            to="/configuracion"
-            className="ml-1 grid h-11 w-11 place-items-center rounded-md hover:bg-white/10"
-            aria-label="Ir a configuración"
-          >
-            <Settings className="h-5 w-5" aria-hidden="true" />
-          </Link>
-        </nav>
+          </nav>
+          {!back && (
+            <button
+              onClick={() => setOpen(true)}
+              aria-label="Abrir menú de navegación"
+              aria-expanded={open}
+              aria-controls="main-drawer"
+              className="grid h-14 w-14 place-items-center rounded-md p-3 hover:bg-white/10 lg:hidden"
+            >
+              <Menu className="h-7 w-7" aria-hidden="true" />
+            </button>
+          )}
+        </div>
       </header>
 
       {open && (
