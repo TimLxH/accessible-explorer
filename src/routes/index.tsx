@@ -76,7 +76,7 @@ function Welcome() {
           />
         </div>
 
-        {/* Título PURY AYNI con efecto dorado */}
+        {/* Título PURIY AYNI con efecto dorado */}
         <h1
           className="mb-3 text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl"
           style={{
@@ -87,7 +87,7 @@ function Welcome() {
             filter: "drop-shadow(0 2px 4px rgba(201,168,76,0.3))",
           }}
         >
-          PURY AYNI
+          PURIY AYNI
         </h1>
 
         <p className="mb-2 max-w-md text-lg text-white/85">
