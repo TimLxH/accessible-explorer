@@ -103,7 +103,7 @@ function Register() {
             filter: "drop-shadow(0 2px 4px rgba(201,168,76,0.3))",
           }}
         >
-          PURIY AYNI
+          PURY AYNI
         </h1>
         <p className="mt-1 text-white/60 text-sm">Únete y comienza a explorar sin barreras</p>
       </div>
