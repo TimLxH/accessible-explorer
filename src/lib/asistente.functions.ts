@@ -28,6 +28,7 @@ Tu rol:
 - Si no sabes algo con certeza, dilo con honestidad y sugiere cómo averiguarlo.`;
 
 export const askAssistant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
