@@ -282,7 +282,41 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_resena_reacciones_publicas: {
+        Args: { p_resena_ids: string[] }
+        Returns: {
+          created_at: string
+          es_mia: boolean
+          id: string
+          resena_id: string
+          tipo: string
+        }[]
+      }
+      get_resena_respuestas_publicas: {
+        Args: { p_resena_ids: string[] }
+        Returns: {
+          autor: string
+          comentario: string
+          created_at: string
+          es_mia: boolean
+          id: string
+          resena_id: string
+          updated_at: string
+        }[]
+      }
+      get_resenas_publicas: {
+        Args: { p_lugar_id: string }
+        Returns: {
+          autor: string
+          calificacion: number
+          comentario: string
+          created_at: string
+          es_mia: boolean
+          id: string
+          lugar_id: string
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

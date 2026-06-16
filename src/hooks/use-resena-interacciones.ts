@@ -4,17 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 export type Reaccion = {
   id: string;
   resena_id: string;
-  user_id: string;
   tipo: "like" | "dislike";
+  es_mia: boolean;
 };
 
 export type Respuesta = {
   id: string;
   resena_id: string;
-  user_id: string;
   autor: string;
   comentario: string;
   created_at: string;
+  es_mia: boolean;
 };
 
 export function useReacciones(lugarId: string, resenaIds: string[]) {
@@ -22,10 +22,10 @@ export function useReacciones(lugarId: string, resenaIds: string[]) {
     queryKey: ["reacciones", lugarId, resenaIds.join(",")],
     enabled: resenaIds.length > 0,
     queryFn: async (): Promise<Reaccion[]> => {
-      const { data, error } = await supabase
-        .from("resena_reacciones")
-        .select("*")
-        .in("resena_id", resenaIds);
+      const { data, error } = await supabase.rpc(
+        "get_resena_reacciones_publicas" as never,
+        { p_resena_ids: resenaIds } as never,
+      );
       if (error) throw new Error(error.message);
       return (data ?? []) as Reaccion[];
     },
@@ -72,11 +72,10 @@ export function useRespuestas(lugarId: string, resenaIds: string[]) {
     queryKey: ["respuestas", lugarId, resenaIds.join(",")],
     enabled: resenaIds.length > 0,
     queryFn: async (): Promise<Respuesta[]> => {
-      const { data, error } = await supabase
-        .from("resena_respuestas")
-        .select("*")
-        .in("resena_id", resenaIds)
-        .order("created_at", { ascending: true });
+      const { data, error } = await supabase.rpc(
+        "get_resena_respuestas_publicas" as never,
+        { p_resena_ids: resenaIds } as never,
+      );
       if (error) throw new Error(error.message);
       return (data ?? []) as Respuesta[];
     },

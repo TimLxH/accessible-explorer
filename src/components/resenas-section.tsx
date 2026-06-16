@@ -235,7 +235,7 @@ export function ResenasSection({
             month: "long",
             day: "numeric",
           });
-          const esMia = user?.id === r.user_id;
+          const esMia = !!user && r.es_mia;
           return (
             <li
               key={r.id}

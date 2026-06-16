@@ -35,7 +35,7 @@ export function ResenaInteracciones({
     return {
       likes: list.filter((r) => r.tipo === "like").length,
       dislikes: list.filter((r) => r.tipo === "dislike").length,
-      miReaccion: list.find((r) => r.user_id === user?.id)?.tipo ?? null,
+      miReaccion: list.find((r) => r.es_mia)?.tipo ?? null,
     };
   }, [reacciones, user?.id]);
 
@@ -140,7 +140,7 @@ export function ResenaInteracciones({
                 day: "numeric",
                 month: "short",
               });
-              const esMia = user?.id === r.user_id;
+              const esMia = !!user && r.es_mia;
               return (
                 <li
                   key={r.id}
