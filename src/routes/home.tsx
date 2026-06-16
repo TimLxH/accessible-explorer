@@ -209,17 +209,16 @@ function Home() {
     // Si está leyendo: interrumpir TTS e ir directo a escuchar (gesto del usuario).
     if (status === "reading") {
       cancelTTSRef.current = true;
-      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-      stopSpeaking();
-      setStatus("listening");
-      setFeedback("Interrumpido. Escuchando tu elección…");
+      stopVoiceOutput();
+      startListening({ feedback: "Interrumpido. Escuchando tu elección…", cancelSpeech: false });
       return;
     }
 
     // Si está escuchando: detener todo.
     if (status === "listening") {
-      try { recRef.current?.stop?.(); } catch { /* ignore */ }
-      stopSpeaking();
+      stopRecognition(recRef.current);
+      recRef.current = null;
+      stopVoiceOutput();
       setStatus("idle");
       setFeedback("");
       return;
