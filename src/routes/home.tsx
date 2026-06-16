@@ -31,14 +31,19 @@ const tiles = [
 
 type Tile = (typeof tiles)[number];
 
-function speakSequence(parts: string[], onDone: () => void) {
+function speakSequence(parts: string[], onDone: () => void, cancelRef: React.MutableRefObject<boolean>) {
   if (!("speechSynthesis" in window)) {
     onDone();
     return;
   }
   window.speechSynthesis.cancel();
+  cancelRef.current = false;
   let i = 0;
   function next() {
+    if (cancelRef.current) {
+      onDone();
+      return;
+    }
     if (i >= parts.length) {
       onDone();
       return;
@@ -47,8 +52,14 @@ function speakSequence(parts: string[], onDone: () => void) {
     const u = new SpeechSynthesisUtterance(parts[i++]);
     u.lang = "es-ES";
     u.rate = VOICE_MENU_RATE;
-    u.onend = next;
-    u.onerror = next;
+    u.onend = () => {
+      if (cancelRef.current) { onDone(); return; }
+      next();
+    };
+    u.onerror = () => {
+      if (cancelRef.current) { onDone(); return; }
+      next();
+    };
     window.speechSynthesis.speak(u);
   }
   next();
@@ -75,6 +86,7 @@ function matchTile(transcript: string): Tile | null {
   }
   return null;
 }
+
 
 function Home() {
   const navigate = useNavigate();
