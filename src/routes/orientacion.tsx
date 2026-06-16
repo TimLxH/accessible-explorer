@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { speak, stopSpeaking } from "@/lib/speech";
 import { MapaVivo } from "@/components/MapaVivo";
+import { KalmanGPS } from "@/lib/kalmanGPS";
 
 
 export const Route = createFileRoute("/orientacion")({
