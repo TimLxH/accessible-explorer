@@ -362,13 +362,15 @@ function NavegacionTab() {
 // ===========================================================
 
 function AdminTab() {
-  const [nombre, setNombre] = useState("");
-  const [latStr, setLatStr] = useState("");
-  const [lngStr, setLngStr] = useState("");
   const [nodos, setNodos] = useState<Nodo[]>(() => loadNodos());
+  const [nombre, setNombre] = useState("");
   const [capturando, setCapturando] = useState(false);
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{
+    lat: number;
+    lng: number;
+    accuracy: number;
+  } | null>(null);
+  const [errorGPS, setErrorGPS] = useState<string | null>(null);
 
   useEffect(() => {
     function sync() {
@@ -378,264 +380,174 @@ function AdminTab() {
     return () => window.removeEventListener("puriy:nodos-actualizados", sync);
   }, []);
 
-  function agregarNodo(n: Nodo, mensajeOk: string) {
-    const next = [...nodos, n];
-    setNodos(next);
-    saveNodos(next); // exporta automáticamente al estado global
-    setNombre("");
-    setLatStr("");
-    setLngStr("");
-    setMensaje(mensajeOk);
-    setError(null);
-  }
-
-  function capturarGPS() {
-    setError(null);
-    setMensaje(null);
-    const nombreTrim = nombre.trim();
-    if (!nombreTrim) {
-      setError("Escribe primero el nombre del nodo de referencia.");
-      return;
-    }
-    if (!("geolocation" in navigator)) {
-      setError(
-        "Tu dispositivo no admite geolocalización. Usa la entrada manual de coordenadas.",
-      );
+  function capturaGPS() {
+    if (!nombre.trim()) {
+      setErrorGPS("Escribe un nombre antes de capturar");
       return;
     }
     setCapturando(true);
+    setPreview(null);
+    setErrorGPS(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        agregarNodo(
-          {
-            id: Date.now(),
-            nombre: nombreTrim,
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-          },
-          `Nodo "${nombreTrim}" capturado con precisión de ±${pos.coords.accuracy.toFixed(1)} m.`,
-        );
+        setPreview({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
         setCapturando(false);
       },
       (err) => {
-        setError(
-          `No se pudo capturar el GPS (${err.code}): ${err.message}. Usa la entrada manual.`,
-        );
+        setErrorGPS("No se pudo obtener el GPS. Verifica permisos.");
         setCapturando(false);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
 
-  function agregarManual() {
-    setError(null);
-    setMensaje(null);
-    const nombreTrim = nombre.trim();
-    if (!nombreTrim) {
-      setError("Escribe primero el nombre del nodo de referencia.");
-      return;
-    }
-    const lat = parseFloat(latStr);
-    const lng = parseFloat(lngStr);
-    if (Number.isNaN(lat) || lat < -90 || lat > 90) {
-      setError("Latitud inválida. Debe estar entre -90 y 90.");
-      return;
-    }
-    if (Number.isNaN(lng) || lng < -180 || lng > 180) {
-      setError("Longitud inválida. Debe estar entre -180 y 180.");
-      return;
-    }
-    agregarNodo(
-      { id: Date.now(), nombre: nombreTrim, lat, lng, accuracy: 0 },
-      `Nodo "${nombreTrim}" añadido manualmente.`,
-    );
+  function guardarNodo() {
+    if (!preview || !nombre.trim()) return;
+    const nuevo: Nodo = {
+      id: Date.now(),
+      nombre: nombre.trim(),
+      lat: preview.lat,
+      lng: preview.lng,
+      accuracy: preview.accuracy,
+    };
+    const actualizados = [...nodos, nuevo];
+    setNodos(actualizados);
+    saveNodos(actualizados);
+    setNombre("");
+    setPreview(null);
   }
 
-  function eliminar(id: number) {
-    const next = nodos.filter((n) => n.id !== id);
-    setNodos(next);
-    saveNodos(next);
+  function eliminarNodo(id: number) {
+    const actualizados = nodos.filter((n) => n.id !== id);
+    setNodos(actualizados);
+    saveNodos(actualizados);
   }
-
-  function exportarANavegacion() {
-    saveNodos(nodos);
-    setMensaje(`Se exportaron ${nodos.length} nodos al Modo Navegación.`);
-  }
-
-  function descargarJSON() {
-    const blob = new Blob([JSON.stringify(nodos, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `nodos-orientacion-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  const sinNodos = nodos.length === 0;
 
   return (
     <div className="space-y-6">
       <header>
         <h2 className="text-2xl font-bold text-foreground">Administrador (Mapeo)</h2>
         <p className="mt-1 text-base text-muted-foreground">
-          Captura puntos de referencia con GPS de alta precisión o ingrésalos manualmente para
-          construir el mapa de orientación.
+          Captura puntos de referencia con GPS de alta precisión.
         </p>
       </header>
 
-      <div className="space-y-4 rounded-lg border border-border p-4">
-        <div>
-          <Label htmlFor="nombre-nodo" className="text-base font-semibold">
-            Nombre del nodo de referencia
-          </Label>
-          <Input
-            id="nombre-nodo"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            placeholder='Ej. "Puerta de entrada", "Inicio de la rampa"'
-            aria-describedby="nombre-nodo-help"
-            className="mt-1 h-12 text-base"
-          />
-          <p id="nombre-nodo-help" className="mt-1 text-sm text-muted-foreground">
-            Describe brevemente el lugar físico donde estás parado ahora.
-          </p>
-        </div>
+      <div className="space-y-3">
+        <label htmlFor="nombre-nodo" className="text-sm font-medium">
+          Nombre del punto de referencia
+        </label>
+        <input
+          id="nombre-nodo"
+          type="text"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          placeholder="Ej: Entrada principal, Cafetería, Baño..."
+          className="w-full rounded-lg border px-3 py-2 text-sm"
+          aria-describedby="nombre-hint"
+        />
+        <p id="nombre-hint" className="text-xs text-gray-500">
+          Escribe el nombre y luego captura tu ubicación actual.
+        </p>
 
-        <Button
-          onClick={capturarGPS}
-          disabled={capturando}
-          aria-label="Capturar la ubicación GPS actual como nuevo nodo"
-          className="h-20 w-full bg-navy text-xl font-bold text-navy-foreground hover:bg-navy/90"
+        <button
+          onClick={capturaGPS}
+          disabled={capturando || !nombre.trim()}
+          className="w-full py-3 rounded-lg font-semibold text-white"
+          style={{ background: capturando ? "#999" : "#534AB7" }}
+          aria-live="polite"
+          aria-label={capturando ? "Obteniendo GPS..." : "Capturar ubicación actual con GPS"}
         >
-          <Crosshair className="mr-3 h-7 w-7" aria-hidden="true" />
-          {capturando ? "Capturando GPS…" : "Capturar posición GPS"}
-        </Button>
+          {capturando ? "⏳ Obteniendo GPS..." : "📍 Capturar mi ubicación actual"}
+        </button>
 
-        <details className="rounded-md border border-border bg-muted/50 px-3 py-2">
-          <summary className="cursor-pointer text-base font-semibold">
-            <Keyboard className="mr-2 inline h-4 w-4" aria-hidden="true" />
-            Ingresar coordenadas manualmente
-          </summary>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="lat" className="text-sm font-semibold">
-                Latitud
-              </Label>
-              <Input
-                id="lat"
-                inputMode="decimal"
-                value={latStr}
-                onChange={(e) => setLatStr(e.target.value)}
-                placeholder="-12.0464"
-                className="mt-1 h-11 text-base"
-              />
-            </div>
-            <div>
-              <Label htmlFor="lng" className="text-sm font-semibold">
-                Longitud
-              </Label>
-              <Input
-                id="lng"
-                inputMode="decimal"
-                value={lngStr}
-                onChange={(e) => setLngStr(e.target.value)}
-                placeholder="-77.0428"
-                className="mt-1 h-11 text-base"
-              />
-            </div>
-            <Button
-              onClick={agregarManual}
-              aria-label="Añadir nodo con coordenadas manuales"
-              variant="secondary"
-              className="h-12 w-full text-base font-semibold sm:col-span-2"
-            >
-              Añadir nodo manual
-            </Button>
-          </div>
-        </details>
-
-        <div role="status" aria-live="polite" className="min-h-6">
-          {mensaje && <p className="text-base text-foreground">{mensaje}</p>}
-        </div>
-        {error && (
-          <p
-            role="alert"
-            className="rounded-md border border-destructive bg-destructive/10 px-4 py-3 text-base text-destructive"
-          >
-            {error}
+        {errorGPS && (
+          <p role="alert" className="text-sm text-red-600 text-center">
+            {errorGPS}
           </p>
+        )}
+
+        {preview && (
+          <div
+            className="rounded-lg border p-3 space-y-1"
+            style={{ background: "#f0fdf4", borderColor: "#1D9E75" }}
+            role="status"
+            aria-label={`Ubicación capturada para ${nombre}: latitud ${preview.lat.toFixed(6)}, longitud ${preview.lng.toFixed(6)}, precisión ${Math.round(preview.accuracy)} metros`}
+          >
+            <p className="text-sm font-semibold" style={{ color: "#1D9E75" }}>
+              ✅ Ubicación capturada
+            </p>
+            <p className="text-xs text-gray-600">📌 {nombre}</p>
+            <p className="text-xs text-gray-500">
+              Lat: {preview.lat.toFixed(6)} · Lng: {preview.lng.toFixed(6)}
+            </p>
+            <p
+              className="text-xs"
+              style={{
+                color:
+                  preview.accuracy < 10
+                    ? "#1D9E75"
+                    : preview.accuracy < 30
+                    ? "#d97706"
+                    : "#dc2626",
+              }}
+            >
+              {preview.accuracy < 10 ? "🟢" : preview.accuracy < 30 ? "🟡" : "🔴"}
+              Precisión: ±{Math.round(preview.accuracy)}m
+              {preview.accuracy > 30 ? " · Espera mejor señal" : ""}
+            </p>
+            <button
+              onClick={guardarNodo}
+              className="w-full mt-2 py-2 rounded-lg font-semibold text-white text-sm"
+              style={{ background: "#1D9E75" }}
+              aria-label={`Guardar nodo ${nombre}`}
+            >
+              ✅ Guardar nodo
+            </button>
+          </div>
         )}
       </div>
 
-      <section aria-labelledby="lista-nodos" className="rounded-lg border border-border p-4">
-        <h3 id="lista-nodos" className="text-lg font-semibold">
-          Nodos capturados ({nodos.length})
-        </h3>
-        {sinNodos ? (
-          <p className="mt-2 text-base text-muted-foreground">
-            Aún no has capturado ningún nodo.
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold mb-2">Nodos guardados ({nodos.length})</h3>
+        {nodos.length === 0 && (
+          <p className="text-sm text-gray-400 text-center py-4">
+            Aún no hay nodos. Captura tu primer punto de referencia.
           </p>
-        ) : (
-          <ol className="mt-3 space-y-2">
-            {nodos.map((n, idx) => (
-              <li
-                key={n.id}
-                className="flex items-start justify-between gap-3 rounded-md border border-border bg-card px-3 py-3"
-              >
-                <div className="flex items-start gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-purple text-sm font-bold text-purple-foreground"
-                  >
-                    {idx + 1}
-                  </span>
-                  <div>
-                    <p className="text-base font-semibold">{n.nombre}</p>
-                    <p className="text-sm text-muted-foreground">
-                      <MapPin className="mr-1 inline h-3 w-3" aria-hidden="true" />
-                      {n.lat.toFixed(6)}, {n.lng.toFixed(6)} · ±{n.accuracy.toFixed(1)} m
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => eliminar(n.id)}
-                  aria-label={`Eliminar nodo ${n.nombre}`}
-                  className="grid h-11 w-11 place-items-center rounded-md text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </li>
-            ))}
-          </ol>
         )}
-      </section>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button
-          onClick={exportarANavegacion}
-          disabled={sinNodos}
-          aria-label="Exportar lista de nodos a la pestaña de Navegación"
-          className="h-16 w-full bg-purple text-base font-semibold text-purple-foreground hover:bg-purple/90"
-        >
-          <Send className="mr-2 h-5 w-5" aria-hidden="true" />
-          Exportar a Navegación
-        </Button>
-        <Button
-          onClick={descargarJSON}
-          disabled={sinNodos}
-          variant="outline"
-          aria-label="Descargar la lista de nodos como archivo JSON"
-          className="h-16 w-full text-base font-semibold"
-        >
-          <Download className="mr-2 h-5 w-5" aria-hidden="true" />
-          Descargar JSON
-        </Button>
+        <ul className="space-y-2" aria-label="Lista de nodos guardados">
+          {nodos.map((n, i) => (
+            <li
+              key={n.id}
+              className="flex items-center justify-between rounded-lg border px-3 py-2"
+              aria-label={`Nodo ${i + 1}: ${n.nombre}`}
+            >
+              <div>
+                <p className="text-sm font-medium">
+                  {i + 1}. {n.nombre}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {n.lat.toFixed(5)}, {n.lng.toFixed(5)} · ±{Math.round(n.accuracy)}m
+                </p>
+              </div>
+              <button
+                onClick={() => eliminarNodo(n.id)}
+                className="text-red-400 hover:text-red-600 text-lg px-2"
+                aria-label={`Eliminar nodo ${n.nombre}`}
+              >
+                🗑️
+              </button>
+            </li>
+          ))}
+        </ul>
+        {nodos.length >= 2 && (
+          <p className="text-xs text-center mt-3" style={{ color: "#1D9E75" }}>
+            ✅ {nodos.length} nodos listos · Ve a Navegación e inicia el recorrido
+          </p>
+        )}
       </div>
     </div>
   );
