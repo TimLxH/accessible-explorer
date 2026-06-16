@@ -140,7 +140,7 @@ export function ResenaInteracciones({
                 day: "numeric",
                 month: "short",
               });
-              const esMia = user?.id === r.user_id;
+              const esMia = !!user && r.es_mia;
               return (
                 <li
                   key={r.id}
