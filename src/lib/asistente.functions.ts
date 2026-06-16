@@ -1,15 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const MessageSchema = z.object({
-  role: z.enum(["user", "assistant", "system"]),
-  content: z.string(),
+  role: z.enum(["user", "assistant"]),
+  content: z.string().max(2000),
 });
 
 const InputSchema = z.object({
-  messages: z.array(MessageSchema).min(1),
+  messages: z.array(MessageSchema).min(1).max(50),
 });
 
 const SYSTEM_PROMPT = `Eres "Puriy Ayni", un asistente de viaje accesible y amigable para personas con discapacidad visual en el departamento de Junín, Perú.
@@ -27,6 +28,7 @@ Tu rol:
 - Si no sabes algo con certeza, dilo con honestidad y sugiere cómo averiguarlo.`;
 
 export const askAssistant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;

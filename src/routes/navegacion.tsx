@@ -75,7 +75,7 @@ function Nav() {
             <div className="flex items-center gap-2 font-semibold">
               <AlertTriangle className="h-5 w-5" /> No se pudo cargar el destino
             </div>
-            <p className="mt-1">{(error as Error)?.message ?? "Destino no encontrado."}</p>
+            <p className="mt-1">Destino no encontrado.</p>
             <button
               onClick={() => refetch()}
               className="mt-3 inline-flex items-center gap-2 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90"

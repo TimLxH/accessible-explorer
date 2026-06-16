@@ -64,7 +64,7 @@ function Favoritos() {
             <div className="flex items-center gap-2 font-semibold">
               <AlertTriangle className="h-5 w-5" /> No se pudieron cargar los favoritos
             </div>
-            <p className="mt-1">{(error as Error)?.message}</p>
+            <p className="mt-1">No se pudieron cargar los datos. Por favor intenta de nuevo.</p>
             <button
               onClick={() => refetch()}
               className="mt-3 inline-flex items-center gap-2 rounded-lg bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90"

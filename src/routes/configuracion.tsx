@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, LogOut } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
 import { speak } from "@/lib/speech";
 import { useVoiceEnabled, useVoiceRate } from "@/lib/voice-settings";
 
@@ -56,12 +57,22 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Config() {
+  const navigate = useNavigate();
   const [voiceCommands, setVoiceCommands] = useVoiceEnabled();
   const [voiceRate, setVoiceRate] = useVoiceRate();
   const [voice, setVoice] = useState(true);
   const [highContrast, setHighContrast] = useState(false);
   const [vibration, setVibration] = useState(true);
   const [volume, setVolume] = useState(70);
+
+  async function handleLogout() {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("signOut error", err);
+    }
+    navigate({ to: "/" });
+  }
 
   return (
     <AppShell title="Configuración" back>
@@ -192,13 +203,14 @@ function Config() {
           </Link>
         </Section>
 
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={handleLogout}
           aria-label="Cerrar sesión y volver a la pantalla de bienvenida"
           className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-destructive bg-white py-4 font-semibold text-destructive hover:bg-destructive/5"
         >
           <LogOut className="h-5 w-5" aria-hidden="true" /> Cerrar sesión
-        </Link>
+        </button>
       </div>
     </AppShell>
   );

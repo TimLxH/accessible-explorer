@@ -61,7 +61,7 @@ function Cercanos() {
             <div className="flex items-center gap-2 font-semibold">
               <AlertTriangle className="h-5 w-5" aria-hidden="true" /> No se pudieron cargar los lugares cercanos
             </div>
-            <p className="mt-1">{(error as Error)?.message}</p>
+            <p className="mt-1">No se pudieron cargar los datos. Por favor intenta de nuevo.</p>
             <button
               onClick={() => refetch()}
               aria-label="Reintentar la carga de lugares cercanos"

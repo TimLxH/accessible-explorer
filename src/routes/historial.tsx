@@ -39,7 +39,7 @@ function History() {
           <p className="text-muted-foreground"><Loader2 className="inline h-5 w-5 animate-spin" /> Cargando historial…</p>
         )}
         {user && isError && (
-          <p className="text-sm text-destructive">{(error as Error)?.message}</p>
+          <p className="text-sm text-destructive">No se pudieron cargar los datos. Por favor intenta de nuevo.</p>
         )}
         {user && !isLoading && data && data.length === 0 && (
           <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
