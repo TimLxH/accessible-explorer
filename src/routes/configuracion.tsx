@@ -82,7 +82,7 @@ function Config() {
             <div>
               <p className="font-medium">Comandos y asistencia por voz</p>
               <p className="text-sm text-muted-foreground">
-                Activa el menú por voz global y la lectura de opciones. Si lo desactivas, se anula de inmediato.
+                Acción de Activar o Desactivar la lectura por voz
               </p>
             </div>
             <Toggle
