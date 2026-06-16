@@ -8,6 +8,7 @@ import {
   Volume2,
   Square,
   Map,
+  Camera,
 } from "lucide-react";
 import { useRef, useState, type MutableRefObject } from "react";
 import { AppShell } from "@/components/app-shell";
