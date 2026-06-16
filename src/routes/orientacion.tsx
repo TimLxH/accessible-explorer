@@ -642,19 +642,16 @@ function AdminTab() {
 }
 
 // ===========================================================
-// Progreso + Mapa simulado
+// ===========================================================
+// Progreso y badge de GPS
 // ===========================================================
 
-function ProgresoYMapa({
+function ProgresoBar({
   nodos,
-  posicionActual,
   nodoActivoId,
-  modoSimulacion,
 }: {
   nodos: Nodo[];
-  posicionActual: { lat: number; lng: number; accuracy: number } | null;
   nodoActivoId: number | null;
-  modoSimulacion: boolean;
 }) {
   const activeIdx = nodoActivoId == null ? -1 : nodos.findIndex((n) => n.id === nodoActivoId);
   const total = nodos.length;
@@ -671,6 +668,8 @@ function ProgresoYMapa({
 
   const minutosRestantes = Math.max(0, Math.round(distTotal / 0.8 / 60));
   const progreso = total > 1 && activeIdx >= 0 ? activeIdx / (total - 1) : 0;
+
+  if (total === 0) return null;
 
   return (
     <section aria-label="Progreso del recorrido" className="space-y-2">
@@ -696,12 +695,6 @@ function ProgresoYMapa({
           style={{ width: `${progreso * 100}%` }}
         />
       </div>
-      <MapaRecorridoLive
-        nodos={nodos}
-        posicion={posicionActual}
-        nodoActivoId={nodoActivoId}
-        modoSimulacion={modoSimulacion}
-      />
     </section>
   );
 }
@@ -709,28 +702,26 @@ function ProgresoYMapa({
 function GpsBadge({
   posicion,
   activo,
-  simular,
 }: {
-  posicion: { lat: number; lng: number; accuracy: number } | null;
+  posicion: { lat: number; lng: number; accuracy: number; heading: number | null } | null;
   activo: boolean;
-  simular: boolean;
 }) {
-  if (!activo || simular) return null;
+  if (!activo) return null;
   const acc = posicion?.accuracy;
   let color = "bg-red-500";
-  let label = "GPS débil · Activa el modo simulación";
+  let label = "Buscando señal GPS…";
   let pulse = false;
   if (acc != null) {
     if (acc < 10) {
       color = "bg-green-500";
-      label = `GPS · Alta precisión ±${acc.toFixed(1)}m`;
+      label = `±${acc.toFixed(1)}m · Alta precisión`;
       pulse = true;
     } else if (acc <= 30) {
       color = "bg-yellow-500";
-      label = `GPS · Precisión media ±${acc.toFixed(1)}m`;
+      label = `±${acc.toFixed(1)}m · Precisión media`;
     } else {
       color = "bg-red-500";
-      label = `GPS débil ±${acc.toFixed(1)}m · Activa el modo simulación`;
+      label = `±${acc.toFixed(1)}m · GPS débil`;
     }
   }
   return (
@@ -738,10 +729,14 @@ function GpsBadge({
       role="status"
       className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground"
     >
-      <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} ${pulse ? "animate-pulse" : ""}`} aria-hidden="true" />
+      <span
+        className={`inline-block h-2.5 w-2.5 rounded-full ${color} ${pulse ? "animate-pulse" : ""}`}
+        aria-hidden="true"
+      />
       <span>{label}</span>
     </div>
   );
 }
+
 
 
