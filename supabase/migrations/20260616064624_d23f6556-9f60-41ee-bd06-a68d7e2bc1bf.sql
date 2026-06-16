@@ -1,0 +1,1 @@
+UPDATE lugares SET image = '/__l5e/assets-v1/6a51a429-b845-49a2-bdeb-45c13b9c790b/santuario-wariwillka.jpg' WHERE id = 'dest-05';
