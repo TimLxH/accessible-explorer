@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, LogOut } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
 import { speak } from "@/lib/speech";
 import { useVoiceEnabled, useVoiceRate } from "@/lib/voice-settings";
 
