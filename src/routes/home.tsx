@@ -95,59 +95,61 @@ function Home() {
   const recRef = useRef<any>(null);
   const cancelTTSRef = useRef<boolean>(false);
 
-  function startListening(rec: any) {
-    // Asegura que el TTS terminó por completo antes de escuchar,
-    // para que el micrófono no capture la propia voz del menú.
+  function startListening() {
+    // Detiene cualquier TTS en curso para que el micrófono no capture al narrador.
     try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
     stopSpeaking();
 
-    // Pequeño respiro para liberar el audio antes de abrir el micrófono.
-    window.setTimeout(() => {
-      setStatus("listening");
-      setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
-      let decided = false;
+    const rec = getRecognition({ interim: false, continuous: false });
+    if (!rec) {
+      setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
+      setStatus("idle");
+      return;
+    }
 
-      rec.onresult = (e: any) => {
-        // Solo resultados finales para evitar dobles disparos.
-        let transcript = "";
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          if (e.results[i].isFinal) transcript += e.results[i][0].transcript + " ";
-        }
-        transcript = transcript.trim();
-        if (!transcript || decided) return;
-        setFeedback(`Te escuché: "${transcript}"`);
-        const tile = matchTile(transcript);
-        if (tile) {
-          decided = true;
-          setFeedback(`Abriendo: ${tile.spoken}`);
-          try { rec.stop(); } catch { /* ignore */ }
-          speakSequence([`Abriendo ${tile.spoken}`], () => {}, cancelTTSRef);
-          navigate({ to: tile.to });
-        } else {
-          setFeedback(`No reconocí "${transcript}". Toca el botón e inténtalo otra vez.`);
-        }
-      };
-      rec.onerror = (e: any) => {
-        if (e?.error === "no-speech") {
-          setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
-        } else if (e?.error === "not-allowed") {
-          setFeedback("Permiso de micrófono denegado. Habilítalo en tu navegador.");
-        } else if (e?.error !== "aborted") {
-          setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
-        }
-        setStatus("idle");
-      };
-      rec.onend = () => {
-        setStatus("idle");
-      };
-      recRef.current = rec;
-      try {
-        rec.start();
-      } catch {
-        setStatus("idle");
-        setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
+    setStatus("listening");
+    setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
+    let decided = false;
+
+    rec.onresult = (e: any) => {
+      let transcript = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        transcript += e.results[i][0].transcript + " ";
       }
-    }, 350);
+      transcript = transcript.trim();
+      if (!transcript || decided) return;
+      setFeedback(`Te escuché: "${transcript}"`);
+      const tile = matchTile(transcript);
+      if (tile) {
+        decided = true;
+        setFeedback(`Abriendo: ${tile.spoken}`);
+        try { rec.stop(); } catch { /* ignore */ }
+        navigate({ to: tile.to });
+      } else {
+        setFeedback(`No reconocí "${transcript}". Toca el botón e inténtalo otra vez.`);
+      }
+    };
+    rec.onerror = (e: any) => {
+      if (e?.error === "no-speech") {
+        setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
+      } else if (e?.error === "not-allowed") {
+        setFeedback("Permiso de micrófono denegado. Habilítalo en tu navegador.");
+      } else if (e?.error !== "aborted") {
+        setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
+      }
+      setStatus("idle");
+    };
+    rec.onend = () => {
+      setStatus((s) => (s === "listening" ? "idle" : s));
+    };
+    recRef.current = rec;
+    try {
+      rec.start();
+    } catch (err) {
+      console.error("rec.start failed", err);
+      setStatus("idle");
+      setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
+    }
   }
 
   function startVoiceMenu() {
@@ -156,34 +158,20 @@ function Home() {
       return;
     }
 
-    // Si está leyendo: interrumpir TTS e ir directo a escuchar
+    // Si está leyendo: interrumpir TTS e ir directo a escuchar (gesto del usuario).
     if (status === "reading") {
       cancelTTSRef.current = true;
-      window.speechSynthesis.cancel();
-      stopSpeaking();
       setFeedback("Interrumpido. Escuchando tu elección…");
-      const rec = getRecognition({ interim: false, continuous: false });
-      if (!rec) {
-        setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
-        setStatus("idle");
-        return;
-      }
-      startListening(rec);
+      startListening();
       return;
     }
 
-    // Si está escuchando o cualquier otro estado activo: detener todo
-    if (status !== "idle") {
+    // Si está escuchando: detener todo.
+    if (status === "listening") {
+      try { recRef.current?.stop?.(); } catch { /* ignore */ }
       stopSpeaking();
-      recRef.current?.stop?.();
       setStatus("idle");
       setFeedback("");
-      return;
-    }
-
-    const rec = getRecognition({ interim: false, continuous: false });
-    if (!rec) {
-      setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       return;
     }
 
@@ -195,7 +183,8 @@ function Home() {
     const outro = "Ahora dime tu elección.";
 
     speakSequence([intro, ...numbered, outro], () => {
-      startListening(rec);
+      // Tras leer el menú, abre el micrófono automáticamente.
+      startListening();
     }, cancelTTSRef);
   }
 
