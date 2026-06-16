@@ -121,7 +121,7 @@ export function AppShell({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6 flex items-center justify-between">
-              <span className="text-lg font-bold">Menú</span>
+              <span className="text-lg font-bold">Más opciones</span>
               <button
                 ref={closeBtnRef}
                 onClick={() => setOpen(false)}
