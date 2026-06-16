@@ -9,7 +9,7 @@ import {
   Square,
   Map,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, type MutableRefObject } from "react";
 import { AppShell } from "@/components/app-shell";
 import { EmergencyBar } from "@/components/emergency-bar";
 import { getRecognition, stopSpeaking } from "@/lib/speech";
@@ -30,8 +30,36 @@ const tiles = [
 ] as const;
 
 type Tile = (typeof tiles)[number];
+type VoiceStatus = "idle" | "reading" | "listening";
+type RecognitionResultLike = { 0: { transcript: string } };
+type RecognitionEventLike = { results: ArrayLike<RecognitionResultLike> };
+type RecognitionErrorLike = { error?: string };
+type RecognitionLike = {
+  onresult: ((event: RecognitionEventLike) => void) | null;
+  onerror: ((event: RecognitionErrorLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop?: () => void;
+  abort?: () => void;
+};
 
-function speakSequence(parts: string[], onDone: () => void, cancelRef: React.MutableRefObject<boolean>) {
+function stopRecognition(rec: RecognitionLike | null) {
+  if (!rec) return;
+  try {
+    rec.onresult = null;
+    rec.onend = null;
+    rec.onerror = null;
+    rec.abort?.();
+    rec.stop?.();
+  } catch { /* ignore */ }
+}
+
+function stopVoiceOutput() {
+  try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+  stopSpeaking();
+}
+
+function speakSequence(parts: string[], onDone: () => void, cancelRef: MutableRefObject<boolean>) {
   if (!("speechSynthesis" in window)) {
     onDone();
     return;
