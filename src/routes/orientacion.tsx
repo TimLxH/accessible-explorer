@@ -163,6 +163,7 @@ function NavegacionTab() {
     lng: number;
     accuracy: number;
     heading: number | null;
+    speed: number | null;
   } | null>(null);
   const [mensaje, setMensaje] = useState<string>("Pulsa 'Iniciar Recorrido' para comenzar.");
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +171,10 @@ function NavegacionTab() {
   const watchIdRef = useRef<number | null>(null);
   const ultimoNodoRef = useRef<number | null>(null);
   const nodosRef = useRef<Nodo[]>(nodos);
-  const { smooth, reset } = useSmoothedGPS();
+  const kalmanRef = useRef(new KalmanGPS());
+  const velocidadRef = useRef({ vLat: 0, vLng: 0 });
+  const ultimaLecturaRef = useRef<{ lat: number; lng: number; ts: number } | null>(null);
+  const drTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     nodosRef.current = nodos;
@@ -211,7 +215,9 @@ function NavegacionTab() {
       return;
     }
 
-    reset();
+    kalmanRef.current.reset();
+    ultimaLecturaRef.current = null;
+    velocidadRef.current = { vLat: 0, vLng: 0 };
     speak("Recorrido iniciado. Caminando entre puntos de referencia.");
     setMensaje("Caminando entre puntos de referencia.");
     setActivo(true);
@@ -219,21 +225,36 @@ function NavegacionTab() {
     try {
       watchIdRef.current = navigator.geolocation.watchPosition(
         (pos) => {
-          const raw = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-            heading: pos.coords.heading,
-          };
+          const raw = pos.coords;
           if (raw.accuracy > 80) return;
-          const suave = smooth(raw);
+          const filtrado = kalmanRef.current.filter(
+            raw.latitude,
+            raw.longitude,
+            raw.accuracy,
+            pos.timestamp,
+          );
+          if (ultimaLecturaRef.current) {
+            const dt = (pos.timestamp - ultimaLecturaRef.current.ts) / 1000;
+            if (dt > 0.1) {
+              velocidadRef.current = {
+                vLat: (filtrado.lat - ultimaLecturaRef.current.lat) / dt,
+                vLng: (filtrado.lng - ultimaLecturaRef.current.lng) / dt,
+              };
+            }
+          }
+          ultimaLecturaRef.current = {
+            lat: filtrado.lat,
+            lng: filtrado.lng,
+            ts: pos.timestamp,
+          };
           setPosicion({
-            lat: suave.lat,
-            lng: suave.lng,
+            lat: filtrado.lat,
+            lng: filtrado.lng,
             accuracy: raw.accuracy,
-            heading: suave.heading,
+            heading: raw.heading,
+            speed: raw.speed,
           });
-          evaluarPosicion(suave.lat, suave.lng, raw.accuracy);
+          evaluarPosicion(filtrado.lat, filtrado.lng, raw.accuracy);
         },
         (err) => {
           setError(`GPS (${err.code}): ${err.message}`);
@@ -241,6 +262,21 @@ function NavegacionTab() {
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
       );
+
+      // Dead reckoning: predice posición cada 100ms entre lecturas GPS
+      drTimerRef.current = window.setInterval(() => {
+        if (!ultimaLecturaRef.current) return;
+        const dt = (Date.now() - ultimaLecturaRef.current.ts) / 1000;
+        if (dt > 3) return;
+        setPosicion((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            lat: prev.lat + velocidadRef.current.vLat * 0.1,
+            lng: prev.lng + velocidadRef.current.vLng * 0.1,
+          };
+        });
+      }, 100);
     } catch (e) {
       setError(`No se pudo iniciar el GPS: ${(e as Error).message}`);
     }
@@ -255,6 +291,13 @@ function NavegacionTab() {
       }
       watchIdRef.current = null;
     }
+    if (drTimerRef.current != null) {
+      clearInterval(drTimerRef.current);
+      drTimerRef.current = null;
+    }
+    kalmanRef.current.reset();
+    ultimaLecturaRef.current = null;
+    velocidadRef.current = { vLat: 0, vLng: 0 };
     setActivo(false);
     ultimoNodoRef.current = null;
     setNodoActivoId(null);
