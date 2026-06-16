@@ -31,22 +31,6 @@ const tiles: Tile[] = [
   { to: "/home", spoken: "Inicio", keywords: ["inicio", "home", "principal"] },
 ];
 
-function matchTile(transcript: string): Tile | null {
-  const t = transcript.toLowerCase();
-  const numMatch = t.match(/\b([1-7]|uno|dos|tres|cuatro|cinco|seis|siete)\b/);
-  if (numMatch) {
-    const map: Record<string, number> = {
-      "1": 0, uno: 0, "2": 1, dos: 1, "3": 2, tres: 2, "4": 3, cuatro: 3,
-      "5": 4, cinco: 4, "6": 5, seis: 5, "7": 6, siete: 6,
-    };
-    const idx = map[numMatch[1]];
-    if (idx != null && tiles[idx]) return tiles[idx];
-  }
-  for (const tile of tiles) {
-    if (tile.keywords.some((k) => t.includes(k))) return tile;
-  }
-  return null;
-}
 
 function speakSequence(parts: string[], onDone: () => void) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) {
@@ -85,6 +69,7 @@ export function VoiceMenuFab() {
   const [feedback, setFeedback] = useState("");
   const recRef = useRef<RecognitionLike | null>(null);
   const recStartedRef = useRef(false);
+  const ejecutadoRef = useRef(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Cancel any active session when voice is disabled or route changes.
@@ -115,38 +100,90 @@ export function VoiceMenuFab() {
   // Hide on landing/auth pages to avoid clutter.
   if (pathname === "/" || pathname === "/login" || pathname === "/register") return null;
 
+  function evaluarTranscript(texto: string) {
+    if (ejecutadoRef.current) return;
+    const normalizado = texto
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+    const comandos: Record<string, () => void> = {
+      "uno": () => navigate({ to: "/explorar" }),
+      "dos": () => navigate({ to: "/lugares-cercanos" }),
+      "tres": () => navigate({ to: "/asistente" }),
+      "cuatro": () => navigate({ to: "/favoritos" }),
+      "cinco": () => navigate({ to: "/historial" }),
+      "seis": () => navigate({ to: "/configuracion" }),
+      "siete": () => navigate({ to: "/home" }),
+      "1": () => navigate({ to: "/explorar" }),
+      "2": () => navigate({ to: "/lugares-cercanos" }),
+      "3": () => navigate({ to: "/asistente" }),
+      "4": () => navigate({ to: "/favoritos" }),
+      "5": () => navigate({ to: "/historial" }),
+      "6": () => navigate({ to: "/configuracion" }),
+      "7": () => navigate({ to: "/home" }),
+      "explorar": () => navigate({ to: "/explorar" }),
+      "busqueda": () => navigate({ to: "/explorar" }),
+      "búsqueda": () => navigate({ to: "/explorar" }),
+      "destino": () => navigate({ to: "/explorar" }),
+      "cercano": () => navigate({ to: "/lugares-cercanos" }),
+      "cercanos": () => navigate({ to: "/lugares-cercanos" }),
+      "cerca": () => navigate({ to: "/lugares-cercanos" }),
+      "lugares": () => navigate({ to: "/lugares-cercanos" }),
+      "chatbot": () => navigate({ to: "/asistente" }),
+      "asistente": () => navigate({ to: "/asistente" }),
+      "ayudante": () => navigate({ to: "/asistente" }),
+      "favoritos": () => navigate({ to: "/favoritos" }),
+      "favorito": () => navigate({ to: "/favoritos" }),
+      "historial": () => navigate({ to: "/historial" }),
+      "recientes": () => navigate({ to: "/historial" }),
+      "configuracion": () => navigate({ to: "/configuracion" }),
+      "configuración": () => navigate({ to: "/configuracion" }),
+      "ajustes": () => navigate({ to: "/configuracion" }),
+      "inicio": () => navigate({ to: "/home" }),
+      "home": () => navigate({ to: "/home" }),
+      "principal": () => navigate({ to: "/home" }),
+    };
+
+    for (const [keyword, accion] of Object.entries(comandos)) {
+      const keyNorm = keyword
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      if (normalizado.includes(keyNorm)) {
+        ejecutadoRef.current = true;
+        const rec = recRef.current;
+        if (rec) {
+          try { rec.abort?.(); } catch { /* ignore */ }
+        }
+        recRef.current = null;
+        recStartedRef.current = false;
+        setStatus("idle");
+        setFeedback("Abriendo…");
+        stopSpeaking();
+        accion();
+        return;
+      }
+    }
+  }
+
   function listenNow(rec: RecognitionLike) {
     if (recStartedRef.current) return;
     recStartedRef.current = true;
     setStatus("listening");
     setFeedback("Escuchando…");
-    let decided = false;
-
-    const fire = (tile: Tile) => {
-      if (decided) return;
-      decided = true;
-      setFeedback(`Abriendo: ${tile.spoken}`);
-      stopSpeaking();
-      stopRecognition(rec);
-      recRef.current = null;
-      recStartedRef.current = false;
-      setStatus("idle");
-      navigate({ to: tile.to });
-    };
+    ejecutadoRef.current = false;
 
     rec.onresult = (e) => {
-      if (decided) return;
-      let combined = "";
-      for (let i = 0; i < e.results.length; i += 1) {
-        combined += `${e.results[i][0].transcript} `;
+      if (ejecutadoRef.current) return;
+      for (let i = 0; i < e.results.length; i++) {
+        const transcript = e.results[i][0].transcript;
+        evaluarTranscript(transcript);
+        if (ejecutadoRef.current) break;
       }
-      const transcript = combined.trim();
-      if (transcript) setFeedback(`Te escuché: "${transcript}"`);
-      const tile = matchTile(transcript);
-      if (tile) fire(tile);
     };
     rec.onerror = (e) => {
-      if (decided) return;
+      if (ejecutadoRef.current) return;
       if (e?.error === "no-speech") setFeedback("No te escuché. Intenta de nuevo.");
       else if (e?.error === "not-allowed") setFeedback("Permiso de micrófono denegado.");
       else if (e?.error !== "aborted") setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
@@ -155,7 +192,7 @@ export function VoiceMenuFab() {
       setStatus("idle");
     };
     rec.onend = () => {
-      if (decided) return;
+      if (ejecutadoRef.current) return;
       recRef.current = null;
       recStartedRef.current = false;
       setStatus("idle");
@@ -168,9 +205,7 @@ export function VoiceMenuFab() {
     if (status === "reading") {
       stopSpeaking();
       setFeedback("Interrumpido. Escuchando tu elección…");
-      const rec = recRef.current;
-      if (rec) listenNow(rec);
-      else setStatus("idle");
+      setStatus("listening");
       return;
     }
     if (status === "listening") {
@@ -182,20 +217,24 @@ export function VoiceMenuFab() {
       setFeedback("");
       return;
     }
-    const rec = getRecognition({ interim: true, continuous: true }) as RecognitionLike | null;
+    const rec = getRecognition({ interim: true, continuous: false }) as RecognitionLike | null;
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       return;
     }
     recRef.current = rec;
     recStartedRef.current = false;
+    ejecutadoRef.current = false;
+    listenNow(rec);
     setStatus("reading");
-    setFeedback("Leyendo opciones…");
+    setFeedback("Leyendo opciones… también puedes decir una opción ahora.");
     const intro = "Opciones disponibles. Di el número o el nombre.";
     const numbered = tiles.map((t, i) => `${i + 1}: ${t.spoken}.`);
     speakSequence([intro, ...numbered, "Te escucho."], () => {
       if (!getVoiceEnabled()) { setStatus("idle"); return; }
-      listenNow(rec);
+      if (ejecutadoRef.current) return;
+      setStatus((s) => (s === "reading" ? "listening" : s));
+      setFeedback((current) => current.startsWith("Abriendo:") ? current : "Escuchando… di un número o el nombre.");
     });
   }
 
