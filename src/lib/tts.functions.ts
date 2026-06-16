@@ -1,9 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Sarah - cálida y serena
 const VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
 
 export const synthesizeSpeech = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { text: string }) => {
     if (!data || typeof data.text !== "string") throw new Error("text required");
     const text = data.text.trim().slice(0, 2000);
