@@ -95,10 +95,19 @@ function Home() {
   const recRef = useRef<any>(null);
   const cancelTTSRef = useRef<boolean>(false);
 
-  function startListening() {
-    // Detiene cualquier TTS en curso para que el micrófono no capture al narrador.
-    try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-    stopSpeaking();
+  function startListening(options?: { status?: "reading" | "listening"; feedback?: string; cancelSpeech?: boolean }) {
+    try {
+      recRef.current?.onresult && (recRef.current.onresult = null);
+      recRef.current?.onend && (recRef.current.onend = null);
+      recRef.current?.onerror && (recRef.current.onerror = null);
+      recRef.current?.abort?.();
+    } catch { /* ignore */ }
+
+    if (options?.cancelSpeech !== false) {
+      cancelTTSRef.current = true;
+      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+      stopSpeaking();
+    }
 
     // interim=true + continuous=true: evalúa el texto conforme el usuario habla
     // para disparar la acción al instante, sin esperar a que termine la frase.
@@ -106,17 +115,20 @@ function Home() {
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       setStatus("idle");
-      return;
+      return false;
     }
 
-    setStatus("listening");
-    setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
+    setStatus(options?.status ?? "listening");
+    setFeedback(options?.feedback ?? "Escuchando… di un número (uno a seis) o el nombre.");
     let decided = false;
 
     const fire = (tile: Tile) => {
       if (decided) return;
       decided = true;
+      cancelTTSRef.current = true;
       setFeedback(`Abriendo: ${tile.spoken}`);
+      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+      stopSpeaking();
       try { rec.onresult = null; rec.onend = null; rec.onerror = null; } catch { /* ignore */ }
       try { rec.abort(); } catch { /* ignore */ }
       try { rec.stop(); } catch { /* ignore */ }
@@ -150,15 +162,17 @@ function Home() {
     };
     rec.onend = () => {
       if (decided) return;
-      setStatus((s) => (s === "listening" ? "idle" : s));
+      setStatus((s) => (s === "listening" || s === "reading" ? "idle" : s));
     };
     recRef.current = rec;
     try {
       rec.start();
+      return true;
     } catch (err) {
       console.error("rec.start failed", err);
       setStatus("idle");
       setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
+      return false;
     }
   }
 
@@ -171,8 +185,10 @@ function Home() {
     // Si está leyendo: interrumpir TTS e ir directo a escuchar (gesto del usuario).
     if (status === "reading") {
       cancelTTSRef.current = true;
+      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+      stopSpeaking();
+      setStatus("listening");
       setFeedback("Interrumpido. Escuchando tu elección…");
-      startListening();
       return;
     }
 
@@ -185,16 +201,22 @@ function Home() {
       return;
     }
 
-    setStatus("reading");
-    setFeedback("Leyendo opciones disponibles… Toca de nuevo para interrumpir y hablar.");
-
     const intro = "Estas son las opciones disponibles. Di el número o el nombre de la que deseas abrir.";
     const numbered = tiles.map((t, i) => `Opción ${i + 1}: ${t.spoken}.`);
     const outro = "Ahora dime tu elección.";
 
+    const started = startListening({
+      status: "reading",
+      feedback: "Leyendo opciones disponibles… también puedes decir una opción ahora.",
+      cancelSpeech: false,
+    });
+    if (!started) return;
+
     speakSequence([intro, ...numbered, outro], () => {
-      // Tras leer el menú, abre el micrófono automáticamente.
-      startListening();
+      // El micrófono ya está activo desde el inicio; al terminar solo cambia el estado visual.
+      if (!getVoiceEnabled()) { setStatus("idle"); return; }
+      setStatus((s) => (s === "reading" ? "listening" : s));
+      setFeedback((current) => current.startsWith("Abriendo:") ? current : "Escuchando… di un número (uno a seis) o el nombre.");
     }, cancelTTSRef);
   }
 
