@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Eye, EyeOff, Volume2, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Volume2, Loader2, KeyRound } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { speak } from "@/lib/speech";
+import logo from "@/assets/puriy-ayni-logo.png.asset.json";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Iniciar sesión — Puriy Ayni" }] }),
@@ -42,19 +43,69 @@ function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <div className="bg-navy px-6 pb-10 pt-12 text-navy-foreground">
-        <Link to="/" aria-label="Volver a la pantalla de bienvenida" className="text-sm text-white/70 hover:text-white">← Volver</Link>
-        <h1 className="mt-4 text-3xl font-extrabold">Bienvenido de vuelta</h1>
-        <p className="mt-1 text-white/70">Inicia sesión para continuar tu viaje</p>
+    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-[#0a0e27]">
+      {/* Fondo decorativo */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0e27] via-[#10153a] to-[#0a0e27]" />
+        <div className="absolute left-1/2 top-[12%] h-48 w-48 -translate-x-1/2 rounded-full bg-[#4ade80]/8 blur-3xl" />
+        <div className="absolute left-1/2 top-[12%] h-36 w-36 -translate-x-1/2 rounded-full bg-[#a78bfa]/8 blur-3xl" />
+        <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="stars-login" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="30" r="1" fill="white" opacity="0.25" />
+              <circle cx="80" cy="70" r="0.8" fill="white" opacity="0.15" />
+              <circle cx="50" cy="10" r="1.2" fill="white" opacity="0.2" />
+              <circle cx="100" cy="40" r="0.6" fill="white" opacity="0.3" />
+              <circle cx="10" cy="90" r="0.9" fill="white" opacity="0.15" />
+              <circle cx="70" cy="100" r="0.7" fill="white" opacity="0.25" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#stars-login)" />
+        </svg>
       </div>
+
+      {/* Header con logo */}
+      <div className="relative flex flex-col items-center px-6 pt-10 pb-6 text-center">
+        <Link
+          to="/"
+          aria-label="Volver a la pantalla de bienvenida"
+          className="absolute left-4 top-4 text-sm text-white/60 hover:text-white transition-colors"
+        >
+          ← Volver
+        </Link>
+        <div
+          aria-hidden="true"
+          className="mb-4 grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-white/5 shadow-[0_0_30px_rgba(74,222,128,0.12)] ring-1 ring-white/20 backdrop-blur-sm"
+        >
+          <img
+            src={logo.url}
+            alt=""
+            className="h-20 w-20 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]"
+          />
+        </div>
+        <h1
+          className="text-3xl font-extrabold tracking-tight"
+          style={{
+            background: "linear-gradient(180deg, #f0d78c 0%, #c9a84c 40%, #8b6914 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            filter: "drop-shadow(0 2px 4px rgba(201,168,76,0.3))",
+          }}
+        >
+          PURIY AYNI
+        </h1>
+        <p className="mt-1 text-white/60 text-sm">Inicia sesión para continuar tu viaje</p>
+      </div>
+
+      {/* Formulario */}
       <form
         onSubmit={onSubmit}
         aria-label="Formulario de inicio de sesión"
-        className="mx-auto -mt-6 w-full max-w-md flex-1 space-y-5 rounded-t-3xl bg-card p-6 pt-8 shadow-sm sm:rounded-3xl sm:p-8"
+        className="relative mx-auto w-full max-w-md flex-1 space-y-5 px-6 pb-6"
       >
         <div className="space-y-1.5">
-          <label htmlFor="login-email" className="text-sm font-medium">Correo electrónico</label>
+          <label htmlFor="login-email" className="text-sm font-medium text-white/80">Correo electrónico</label>
           <input
             id="login-email"
             type="email"
@@ -63,11 +114,11 @@ function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@correo.com"
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base outline-none focus:border-purple focus:ring-2 focus:ring-purple/20"
+            className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3.5 text-base text-white placeholder:text-white/30 outline-none focus:border-[#a78bfa]/60 focus:ring-2 focus:ring-[#a78bfa]/20 backdrop-blur-sm transition-all"
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="login-password" className="text-sm font-medium">Contraseña</label>
+          <label htmlFor="login-password" className="text-sm font-medium text-white/80">Contraseña</label>
           <div className="relative">
             <input
               id="login-password"
@@ -77,12 +128,12 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-base outline-none focus:border-purple focus:ring-2 focus:ring-purple/20"
+              className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3.5 pr-12 text-base text-white placeholder:text-white/30 outline-none focus:border-[#a78bfa]/60 focus:ring-2 focus:ring-[#a78bfa]/20 backdrop-blur-sm transition-all"
             />
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-md text-white/50 hover:text-white/80 transition-colors"
               aria-label={show ? "Ocultar contraseña" : "Mostrar contraseña"}
               aria-pressed={show}
             >
@@ -91,36 +142,38 @@ function Login() {
           </div>
         </div>
         {error && (
-          <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+          <p role="alert" className="rounded-lg bg-red-500/15 px-3 py-2.5 text-sm text-red-300 border border-red-500/20">{error}</p>
         )}
         <button
           type="submit"
           disabled={loading}
           aria-label="Iniciar sesión con tu correo y contraseña"
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple py-4 text-base font-semibold text-purple-foreground shadow transition-colors hover:bg-purple/90 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#5b2d8a] py-4 text-base font-semibold text-white shadow-[0_0_20px_rgba(91,45,138,0.4)] transition-all hover:bg-[#4a2370] hover:shadow-[0_0_30px_rgba(91,45,138,0.6)] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[#a78bfa] focus:ring-offset-2 focus:ring-offset-[#0a0e27]"
         >
           {loading && <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />}
+          <KeyRound className="h-5 w-5" aria-hidden="true" />
           Iniciar sesión
         </button>
-        <p className="text-center text-sm text-muted-foreground">
+
+        <p className="text-center text-sm text-white/50">
           ¿No tienes cuenta?{" "}
-          <Link to="/register" aria-label="Ir a la pantalla de registro" className="font-semibold text-purple hover:underline">
+          <Link to="/register" aria-label="Ir a la pantalla de registro" className="font-semibold text-[#c9a84c] hover:text-[#f0d78c] transition-colors">
             Regístrate
           </Link>
         </p>
-      </form>
-      <div className="mx-auto w-full max-w-md px-6 pb-4 pt-2 sm:px-8">
-        <div className="flex items-center gap-3 py-2">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">O</span>
-          <div className="h-px flex-1 bg-border" />
+
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-xs text-white/40">O</span>
+          <div className="h-px flex-1 bg-white/10" />
         </div>
+
         <button
           type="button"
           onClick={signInWithGoogle}
           disabled={googleLoading}
           aria-label="Continuar con Google"
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-input bg-background py-3.5 text-base font-medium text-foreground shadow-sm transition-colors hover:bg-accent disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 py-3.5 text-base font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[#a78bfa] focus:ring-offset-2 focus:ring-offset-[#0a0e27]"
         >
           {googleLoading ? (
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
@@ -134,7 +187,9 @@ function Login() {
           )}
           Continuar con Google
         </button>
-      </div>
+      </form>
+
+      {/* Botón Escuchar */}
       <button
         type="button"
         onClick={() =>
@@ -143,7 +198,7 @@ function Login() {
           )
         }
         aria-label="Escuchar instrucciones de la pantalla de inicio de sesión"
-        className="flex items-center justify-center gap-3 border-t border-border bg-navy px-4 py-4 text-navy-foreground hover:bg-navy/90"
+        className="relative flex items-center justify-center gap-3 border-t border-white/10 bg-[#0a0e27]/80 px-4 py-4 text-white/90 backdrop-blur-sm transition-colors hover:bg-white/5"
       >
         <Volume2 className="h-5 w-5" aria-hidden="true" />
         <span className="text-sm font-medium">Escuchar</span>
