@@ -8,7 +8,7 @@ const nav = [
   { to: "/lugares-cercanos", label: "Cercanos" },
   { to: "/favoritos", label: "Favoritos" },
   { to: "/historial", label: "Historial" },
-  { to: "/asistente", label: "Asistente" },
+  { to: "/asistente", label: "Chatbot" },
   { to: "/navegacion", label: "Navegación" },
   { to: "/orientacion", label: "Orientación" },
   { to: "/emergencia", label: "Emergencia" },
