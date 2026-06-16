@@ -77,7 +77,10 @@ export function ResenaInteracciones({
           setTexto("");
           speak("Respuesta publicada.");
         },
-        onError: (err) => setError((err as Error).message),
+        onError: (err) => {
+          console.error("[resena-interacciones] crear respuesta", err);
+          setError("No se pudo publicar la respuesta. Por favor intenta de nuevo.");
+        },
       },
     );
   }
