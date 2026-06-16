@@ -69,6 +69,7 @@ export function VoiceMenuFab() {
   const [feedback, setFeedback] = useState("");
   const recRef = useRef<RecognitionLike | null>(null);
   const recStartedRef = useRef(false);
+  const ejecutadoRef = useRef(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Cancel any active session when voice is disabled or route changes.
