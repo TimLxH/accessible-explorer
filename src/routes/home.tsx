@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Search,
   Compass,
-  Mic,
+  Bot,
   Heart,
   Clock,
   AlertTriangle,
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/home")({
 const tiles = [
   { to: "/explorar", label: "Búsqueda de destino", spoken: "Búsqueda de destino", keywords: ["búsqueda", "busqueda", "destino", "explorar", "buscar"], icon: Search, color: "bg-purple text-purple-foreground" },
   { to: "/lugares-cercanos", label: "Lugares cercanos", spoken: "Lugares cercanos", keywords: ["cercano", "cercanos", "cerca", "lugares"], icon: Compass, color: "bg-navy text-navy-foreground" },
-  { to: "/asistente", label: "Chatbot", spoken: "Chatbot", keywords: ["chatbot", "asistente", "voz", "ayudante"], icon: Mic, color: "bg-purple text-purple-foreground" },
+  { to: "/asistente", label: "Chatbot", spoken: "Chatbot", keywords: ["chatbot", "asistente", "voz", "ayudante"], icon: Bot, color: "bg-purple text-purple-foreground" },
   { to: "/favoritos", label: "Favoritos", spoken: "Favoritos", keywords: ["favorito", "favoritos"], icon: Heart, color: "bg-navy text-navy-foreground" },
   { to: "/historial", label: "Historial", spoken: "Historial", keywords: ["historial", "historia", "recientes"], icon: Clock, color: "bg-purple text-purple-foreground" },
   { to: "/emergencia", label: "Emergencia", spoken: "Emergencia", keywords: ["emergencia", "ayuda", "urgencia", "auxilio"], icon: AlertTriangle, color: "bg-destructive text-destructive-foreground" },
