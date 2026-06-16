@@ -398,27 +398,6 @@ function NavegacionTab() {
         )}
       </section>
 
-      <section aria-labelledby="lista-nodos-nav" className="rounded-lg border border-border p-4">
-        <h3 id="lista-nodos-nav" className="text-lg font-semibold">
-          Nodos cargados ({nodos.length})
-        </h3>
-        {nodos.length === 0 ? (
-          <p className="mt-2 text-base text-muted-foreground">
-            No hay nodos. Ve al Administrador para crear puntos de referencia.
-          </p>
-        ) : (
-          <ul className="mt-2 divide-y divide-border">
-            {nodos.map((n) => (
-              <li key={n.id} className="py-2">
-                <p className="font-semibold">{n.nombre}</p>
-                <p className="text-sm text-muted-foreground">
-                  {n.lat.toFixed(6)}, {n.lng.toFixed(6)} · ±{n.accuracy.toFixed(1)} m
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
   );
 }
