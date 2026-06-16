@@ -304,7 +304,12 @@ function NavegacionTab() {
         nodos={nodos}
         posicionActual={posicion}
         nodoActivoId={nodoActivoId}
+        modoSimulacion={simular}
       />
+
+      <GpsBadge posicion={posicion} activo={activo} simular={simular} />
+
+
 
 
       {error && (
