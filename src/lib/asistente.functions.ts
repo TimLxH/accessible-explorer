@@ -57,3 +57,61 @@ export const askAssistant = createServerFn({ method: "POST" })
       return { text: "Lo siento, tuve un problema para responder. Por favor intenta de nuevo." };
     }
   });
+
+const DescribirImagenInput = z.object({
+  imageBase64: z.string().min(100).max(8_000_000),
+  mime: z.string().default("image/jpeg"),
+});
+
+const VISION_SYSTEM_PROMPT = `Eres "Puriy Ayni", un asistente visual para personas con discapacidad visual. Recibes una foto tomada por el usuario con la cámara trasera de su teléfono y debes describir la escena en español.
+
+Reglas:
+- Sé muy breve: de 1 a 3 frases completas.
+- Prioriza en este orden: texto visible (carteles, etiquetas, precios, números), obstáculos cercanos o peligros, personas presentes, y luego objetos relevantes.
+- Si hay texto, léelo literalmente entre comillas.
+- Si la imagen está oscura, borrosa o no se distingue nada, dilo con claridad y sugiere intentar de nuevo.
+- Tono cálido, directo y respetuoso. No uses markdown, asteriscos, emojis ni viñetas: tu respuesta será leída en voz alta.
+- No inventes detalles que no puedas ver con certeza.`;
+
+export const describirImagen = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => DescribirImagenInput.parse(input))
+  .handler(async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Falta LOVABLE_API_KEY");
+
+    const gateway = createLovableAiGatewayProvider(key);
+    const model = gateway("google/gemini-3-flash-preview");
+
+    const dataUrl = data.imageBase64.startsWith("data:")
+      ? data.imageBase64
+      : `data:${data.mime};base64,${data.imageBase64}`;
+
+    try {
+      const { text } = await generateText({
+        model,
+        system: VISION_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", image: dataUrl },
+              { type: "text", text: "Describe lo que ves en esta foto para una persona con discapacidad visual." },
+            ],
+          },
+        ],
+      });
+      return { text: text?.trim() || "No pude describir la imagen. Intenta de nuevo." };
+    } catch (err: unknown) {
+      const e = err as { statusCode?: number; status?: number; message?: string };
+      const code = e?.statusCode ?? e?.status;
+      if (code === 429) {
+        return { text: "Estoy recibiendo demasiadas solicitudes ahora mismo. Por favor intenta de nuevo en unos segundos." };
+      }
+      if (code === 402) {
+        return { text: "Se han agotado los créditos del asistente. Por favor avisa al administrador para recargar." };
+      }
+      console.error("describirImagen error", err);
+      return { text: "Lo siento, tuve un problema al analizar la imagen. Por favor intenta de nuevo." };
+    }
+  });

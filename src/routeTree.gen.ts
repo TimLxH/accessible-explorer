@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as OrientacionRouteImport } from './routes/orientacion'
+import { Route as OjosAbiertosRouteImport } from './routes/ojos-abiertos'
 import { Route as NavegacionRouteImport } from './routes/navegacion'
 import { Route as MapaRecorridoRouteImport } from './routes/mapa-recorrido'
 import { Route as LugaresCercanosRouteImport } from './routes/lugares-cercanos'
@@ -34,6 +35,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const OrientacionRoute = OrientacionRouteImport.update({
   id: '/orientacion',
   path: '/orientacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OjosAbiertosRoute = OjosAbiertosRouteImport.update({
+  id: '/ojos-abiertos',
+  path: '/ojos-abiertos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NavegacionRoute = NavegacionRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/lugares-cercanos': typeof LugaresCercanosRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
+  '/ojos-abiertos': typeof OjosAbiertosRoute
   '/orientacion': typeof OrientacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/lugares-cercanos': typeof LugaresCercanosRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
+  '/ojos-abiertos': typeof OjosAbiertosRoute
   '/orientacion': typeof OrientacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/lugares-cercanos': typeof LugaresCercanosRoute
   '/mapa-recorrido': typeof MapaRecorridoRoute
   '/navegacion': typeof NavegacionRoute
+  '/ojos-abiertos': typeof OjosAbiertosRoute
   '/orientacion': typeof OrientacionRoute
   '/register': typeof RegisterRoute
   '/detalle/$id': typeof DetalleIdRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/lugares-cercanos'
     | '/mapa-recorrido'
     | '/navegacion'
+    | '/ojos-abiertos'
     | '/orientacion'
     | '/register'
     | '/detalle/$id'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/lugares-cercanos'
     | '/mapa-recorrido'
     | '/navegacion'
+    | '/ojos-abiertos'
     | '/orientacion'
     | '/register'
     | '/detalle/$id'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/lugares-cercanos'
     | '/mapa-recorrido'
     | '/navegacion'
+    | '/ojos-abiertos'
     | '/orientacion'
     | '/register'
     | '/detalle/$id'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   LugaresCercanosRoute: typeof LugaresCercanosRoute
   MapaRecorridoRoute: typeof MapaRecorridoRoute
   NavegacionRoute: typeof NavegacionRoute
+  OjosAbiertosRoute: typeof OjosAbiertosRoute
   OrientacionRoute: typeof OrientacionRoute
   RegisterRoute: typeof RegisterRoute
   DetalleIdRoute: typeof DetalleIdRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/orientacion'
       fullPath: '/orientacion'
       preLoaderRoute: typeof OrientacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ojos-abiertos': {
+      id: '/ojos-abiertos'
+      path: '/ojos-abiertos'
+      fullPath: '/ojos-abiertos'
+      preLoaderRoute: typeof OjosAbiertosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/navegacion': {
@@ -368,6 +388,7 @@ const rootRouteChildren: RootRouteChildren = {
   LugaresCercanosRoute: LugaresCercanosRoute,
   MapaRecorridoRoute: MapaRecorridoRoute,
   NavegacionRoute: NavegacionRoute,
+  OjosAbiertosRoute: OjosAbiertosRoute,
   OrientacionRoute: OrientacionRoute,
   RegisterRoute: RegisterRoute,
   DetalleIdRoute: DetalleIdRoute,
