@@ -364,6 +364,33 @@ function NavegacionTab() {
         activo={activo}
       />
 
+      {posicion && activo && (
+        <div
+          role="status"
+          className="mt-1 flex flex-wrap justify-center gap-3 text-xs text-muted-foreground"
+        >
+          <span
+            style={{
+              color:
+                posicion.accuracy < 10
+                  ? "#1D9E75"
+                  : posicion.accuracy < 30
+                    ? "#d97706"
+                    : "#dc2626",
+            }}
+          >
+            {posicion.accuracy < 10 ? "🟢" : posicion.accuracy < 30 ? "🟡" : "🔴"} ±
+            {Math.round(posicion.accuracy)}m
+          </span>
+          {posicion.speed != null && !Number.isNaN(posicion.speed) && (
+            <span>🚶 {(Math.max(0, posicion.speed) * 3.6).toFixed(1)} km/h</span>
+          )}
+          {posicion.heading != null && !Number.isNaN(posicion.heading) && (
+            <span>🧭 {Math.round(posicion.heading)}°</span>
+          )}
+        </div>
+      )}
+
       <GpsBadge posicion={posicion} activo={activo} />
 
       {error && (
