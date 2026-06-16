@@ -118,28 +118,23 @@ function matchTile(transcript: string): Tile | null {
 
 function Home() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"idle" | "reading" | "listening">("idle");
+  const [status, setStatus] = useState<VoiceStatus>("idle");
   const [feedback, setFeedback] = useState<string>("");
-  const recRef = useRef<any>(null);
+  const recRef = useRef<RecognitionLike | null>(null);
   const cancelTTSRef = useRef<boolean>(false);
 
-  function startListening(options?: { status?: "reading" | "listening"; feedback?: string; cancelSpeech?: boolean }) {
-    try {
-      recRef.current?.onresult && (recRef.current.onresult = null);
-      recRef.current?.onend && (recRef.current.onend = null);
-      recRef.current?.onerror && (recRef.current.onerror = null);
-      recRef.current?.abort?.();
-    } catch { /* ignore */ }
+  function startListening(options?: { status?: Exclude<VoiceStatus, "idle">; feedback?: string; cancelSpeech?: boolean }) {
+    stopRecognition(recRef.current);
+    recRef.current = null;
 
     if (options?.cancelSpeech !== false) {
       cancelTTSRef.current = true;
-      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-      stopSpeaking();
+      stopVoiceOutput();
     }
 
     // interim=true + continuous=true: evalúa el texto conforme el usuario habla
     // para disparar la acción al instante, sin esperar a que termine la frase.
-    const rec = getRecognition({ interim: true, continuous: true });
+    const rec = getRecognition({ interim: true, continuous: true }) as RecognitionLike | null;
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       setStatus("idle");
@@ -155,16 +150,14 @@ function Home() {
       decided = true;
       cancelTTSRef.current = true;
       setFeedback(`Abriendo: ${tile.spoken}`);
-      try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-      stopSpeaking();
-      try { rec.onresult = null; rec.onend = null; rec.onerror = null; } catch { /* ignore */ }
-      try { rec.abort(); } catch { /* ignore */ }
-      try { rec.stop(); } catch { /* ignore */ }
+      stopVoiceOutput();
+      stopRecognition(rec);
+      recRef.current = null;
       setStatus("idle");
       navigate({ to: tile.to });
     };
 
-    rec.onresult = (e: any) => {
+    rec.onresult = (e) => {
       if (decided) return;
       // Evalúa todos los resultados (intermedios y finales) en tiempo real.
       let combined = "";
@@ -177,7 +170,7 @@ function Home() {
       const tile = matchTile(transcript);
       if (tile) fire(tile);
     };
-    rec.onerror = (e: any) => {
+    rec.onerror = (e) => {
       if (decided) return;
       if (e?.error === "no-speech") {
         setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
@@ -186,10 +179,12 @@ function Home() {
       } else if (e?.error !== "aborted") {
         setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
       }
+      recRef.current = null;
       setStatus("idle");
     };
     rec.onend = () => {
       if (decided) return;
+      recRef.current = null;
       setStatus((s) => (s === "listening" || s === "reading" ? "idle" : s));
     };
     recRef.current = rec;
@@ -198,6 +193,7 @@ function Home() {
       return true;
     } catch (err) {
       console.error("rec.start failed", err);
+      recRef.current = null;
       setStatus("idle");
       setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
       return false;
