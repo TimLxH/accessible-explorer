@@ -39,7 +39,8 @@ function Login() {
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
     setGoogleLoading(false);
     if (error) {
-      setError(error.message);
+      console.error("[login] signInWithOAuth google", error);
+      setError("No se pudo iniciar sesión con Google. Por favor intenta de nuevo.");
     }
   }
 
