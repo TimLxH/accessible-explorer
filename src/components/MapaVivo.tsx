@@ -107,7 +107,8 @@ export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
   useEffect(() => {
     function tick() {
       const target = posicion
-        ? { lat: posicion.lat, lng: posicion.lng }
+      const target = posicion
+        ? snapToRoute({ lat: posicion.lat, lng: posicion.lng }, nodos)
         : nodos[0]
           ? { lat: nodos[0].lat, lng: nodos[0].lng }
           : null;
