@@ -3,7 +3,7 @@ import { Eye, EyeOff, Volume2, Loader2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { speak } from "@/lib/speech";
-import logo from "@/assets/puriy-ayni-logo.png.asset.json";
+import logo from "@/assets/puriy-ayni-logo-v2.png.asset.json";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Crear cuenta — Puriy Ayni" }] }),
