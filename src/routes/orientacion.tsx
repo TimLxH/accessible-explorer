@@ -9,16 +9,15 @@ import {
   Send,
   Trash2,
   Keyboard,
-  MousePointer2,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { speak, stopSpeaking } from "@/lib/speech";
-import { MapaRecorridoLive } from "@/components/MapaRecorridoLive";
+import { MapaVivo } from "@/components/MapaVivo";
+
 
 export const Route = createFileRoute("/orientacion")({
   head: () => ({
