@@ -200,7 +200,7 @@ function Recorrido() {
           <div
             role="img"
             aria-label="Fotografía de la entrada principal del parque de la identidad Wanka con tres puertas grandes y un arco de hojas en el centro"
-            className="grid aspect-[16/10] place-items-center rounded-2xl bg-gradient-to-br from-navy to-purple text-center text-white"
+            className="grid aspect-[16/10] place-items-center rounded-2xl bg-navy text-center text-navy-foreground"
           >
             <span className="px-4 text-lg font-semibold">Entrada principal del parque</span>
           </div>
@@ -251,7 +251,7 @@ function Recorrido() {
           <div
             role="img"
             aria-label="Fotografía de tres esculturas: un mate de piedra, una vasija grande semi enterrada y una mujer con pollera huanca"
-            className="grid aspect-[16/10] place-items-center rounded-2xl bg-gradient-to-br from-purple to-navy text-center text-white"
+            className="grid aspect-[16/10] place-items-center rounded-2xl bg-purple text-center text-purple-foreground"
           >
             <span className="px-4 text-lg font-semibold">Esculturas de bienvenida</span>
           </div>
@@ -312,7 +312,7 @@ function Recorrido() {
           <div
             role="img"
             aria-label="Fotografía de cinco jarrones de cerámica antiguos apilados uno encima del otro en medio de una pileta circular"
-            className="grid aspect-[16/10] place-items-center rounded-2xl bg-gradient-to-br from-accent to-purple text-center text-white"
+            className="grid aspect-[16/10] place-items-center rounded-2xl bg-accent text-center text-accent-foreground"
           >
             <span className="px-4 text-lg font-semibold">Jarrones antiguos</span>
           </div>
@@ -365,7 +365,7 @@ function Recorrido() {
           <div
             role="img"
             aria-label="Fotografía de la escultura de una mujer huancaína con el traje típico de la danza del Santiago y un sombrero"
-            className="grid aspect-[16/10] place-items-center rounded-2xl bg-gradient-to-br from-navy to-accent text-center text-white"
+            className="grid aspect-[16/10] place-items-center rounded-2xl bg-navy text-center text-navy-foreground"
           >
             <span className="px-4 text-lg font-semibold">Mujer de la danza Santiago</span>
           </div>
@@ -434,8 +434,8 @@ function Recorrido() {
                     aria-hidden="true"
                     className={`grid aspect-[16/10] w-full place-items-center rounded-xl text-white ${
                       s.danger
-                        ? "bg-gradient-to-br from-destructive to-navy"
-                        : "bg-gradient-to-br from-purple to-navy"
+                        ? "bg-destructive"
+                        : "bg-purple"
                     }`}
                   >
                     <span className="px-3 text-center text-sm font-semibold">{s.title}</span>

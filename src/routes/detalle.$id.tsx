@@ -105,7 +105,7 @@ function Detalle() {
     <AppShell title={site.title} back>
       <div className="relative h-64 w-full overflow-hidden sm:h-80">
         <img src={site.image} alt={`Fotografía de ${site.title}`} className="h-full w-full object-cover" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div aria-hidden="true" className="absolute inset-0 bg-foreground/70" />
         {user ? (
           <button
             onClick={() => toggleFav.mutate({ lugarId: site.id, isFav })}

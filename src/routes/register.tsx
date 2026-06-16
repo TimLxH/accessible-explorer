@@ -56,7 +56,7 @@ function Register() {
     <div className="relative flex min-h-dvh flex-col overflow-hidden bg-[#0a0e27]">
       {/* Fondo decorativo */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0e27] via-[#10153a] to-[#0a0e27]" />
+        <div className="absolute inset-0 bg-foreground" />
         <div className="absolute left-1/2 top-[12%] h-48 w-48 -translate-x-1/2 rounded-full bg-[#4ade80]/8 blur-3xl" />
         <div className="absolute left-1/2 top-[12%] h-36 w-36 -translate-x-1/2 rounded-full bg-[#a78bfa]/8 blur-3xl" />
         <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
