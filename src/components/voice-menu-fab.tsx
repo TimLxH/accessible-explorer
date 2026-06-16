@@ -31,22 +31,6 @@ const tiles: Tile[] = [
   { to: "/home", spoken: "Inicio", keywords: ["inicio", "home", "principal"] },
 ];
 
-function matchTile(transcript: string): Tile | null {
-  const t = transcript.toLowerCase();
-  const numMatch = t.match(/\b([1-7]|uno|dos|tres|cuatro|cinco|seis|siete)\b/);
-  if (numMatch) {
-    const map: Record<string, number> = {
-      "1": 0, uno: 0, "2": 1, dos: 1, "3": 2, tres: 2, "4": 3, cuatro: 3,
-      "5": 4, cinco: 4, "6": 5, seis: 5, "7": 6, siete: 6,
-    };
-    const idx = map[numMatch[1]];
-    if (idx != null && tiles[idx]) return tiles[idx];
-  }
-  for (const tile of tiles) {
-    if (tile.keywords.some((k) => t.includes(k))) return tile;
-  }
-  return null;
-}
 
 function speakSequence(parts: string[], onDone: () => void) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) {
