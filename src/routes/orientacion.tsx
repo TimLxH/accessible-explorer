@@ -748,11 +748,13 @@ function ProgresoYMapa({
           style={{ width: `${progreso * 100}%` }}
         />
       </div>
-      <MapaRecorridoCanvas
+      <MapaRecorridoLive
         nodos={nodos}
-        posicionActual={posicionActual}
+        posicion={posicionActual}
         nodoActivoId={nodoActivoId}
+        modoSimulacion={false}
       />
+
     </section>
   );
 }
