@@ -13,6 +13,7 @@ type Posicion = {
   lng: number;
   accuracy: number;
   heading: number | null;
+  speed?: number | null;
 } | null;
 
 type Props = {
@@ -28,6 +29,49 @@ const METERS_PER_DEG = 111320;
 
 function truncar(s: string, n = 18) {
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
+}
+
+// Haversine local (no tocar la del archivo principal)
+function distMetros(aLat: number, aLng: number, bLat: number, bLng: number) {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+// Proyecta la posición sobre el segmento de ruta más cercano.
+// Si está a más de 25 m de la ruta, devuelve la posición real.
+function snapToRoute(
+  pos: { lat: number; lng: number },
+  nodos: NodoVivo[],
+): { lat: number; lng: number } {
+  if (nodos.length < 2) return { lat: pos.lat, lng: pos.lng };
+  let mejorDist = Infinity;
+  let mejorPunto = { lat: pos.lat, lng: pos.lng };
+  for (let i = 0; i < nodos.length - 1; i++) {
+    const A = nodos[i];
+    const B = nodos[i + 1];
+    const dx = B.lng - A.lng;
+    const dy = B.lat - A.lat;
+    const len2 = dx * dx + dy * dy;
+    if (len2 === 0) continue;
+    const t = Math.max(
+      0,
+      Math.min(1, ((pos.lng - A.lng) * dx + (pos.lat - A.lat) * dy) / len2),
+    );
+    const proy = { lat: A.lat + t * dy, lng: A.lng + t * dx };
+    const d = distMetros(pos.lat, pos.lng, proy.lat, proy.lng);
+    if (d < mejorDist) {
+      mejorDist = d;
+      mejorPunto = proy;
+    }
+  }
+  if (mejorDist < 25) return mejorPunto;
+  return { lat: pos.lat, lng: pos.lng };
 }
 
 export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
@@ -63,7 +107,7 @@ export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
   useEffect(() => {
     function tick() {
       const target = posicion
-        ? { lat: posicion.lat, lng: posicion.lng }
+        ? snapToRoute({ lat: posicion.lat, lng: posicion.lng }, nodos)
         : nodos[0]
           ? { lat: nodos[0].lat, lng: nodos[0].lng }
           : null;
@@ -133,14 +177,16 @@ export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
     const toY = (lat: number) =>
       H / 2 - ((lat - center.lat) * METERS_PER_DEG) / METROS_POR_PIXEL;
 
-    // 3. Burbuja de precisión
+    // 3. Burbuja de precisión (en posición GPS real, no en snap)
     if (posicion) {
       const r = Math.max(8, posicion.accuracy / METROS_POR_PIXEL);
+      const bx = toX(posicion.lng);
+      const by = toY(posicion.lat);
       ctx.fillStyle = "rgba(83,74,183,0.08)";
       ctx.strokeStyle = "rgba(83,74,183,0.3)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(W / 2, H / 2, r, 0, Math.PI * 2);
+      ctx.arc(bx, by, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
     }
@@ -264,18 +310,35 @@ export function MapaVivo({ nodos, posicion, nodoActivoId, activo }: Props) {
     ctx.restore();
   }
 
+  // Track previous position to derive heading from movement
+  const prevPosRef = useRef<{ lat: number; lng: number } | null>(null);
+
   // Posicionar y rotar la figura del usuario (siempre centro)
   useEffect(() => {
     const fig = figRef.current;
     if (!fig || size.w === 0) return;
     const px = size.w / 2 - 14;
     const py = size.h / 2 - 22;
-    let heading = posicion?.heading;
+
+    // Prioridad 1: heading del GPS si hay velocidad razonable
+    let heading: number | null = posicion?.heading ?? null;
+    const speed = posicion?.speed ?? null;
+    const usableGpsHeading =
+      heading != null && !Number.isNaN(heading) && (speed == null || speed >= 0.5);
+
+    if (!usableGpsHeading && posicion && prevPosRef.current) {
+      const dLng = posicion.lng - prevPosRef.current.lng;
+      const dLat = posicion.lat - prevPosRef.current.lat;
+      if (Math.abs(dLat) + Math.abs(dLng) > 0.000001) {
+        heading = ((Math.atan2(dLng, dLat) * 180) / Math.PI + 360) % 360;
+      }
+    }
     if (heading == null || Number.isNaN(heading)) {
       heading = lastHeadingRef.current;
     } else {
       lastHeadingRef.current = heading;
     }
+    if (posicion) prevPosRef.current = { lat: posicion.lat, lng: posicion.lng };
     fig.style.transform = `translate(${px}px, ${py}px) rotate(${heading}deg)`;
   }, [posicion, size]);
 
