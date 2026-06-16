@@ -45,23 +45,13 @@ export function AppShell({
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-30 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border bg-navy px-4 py-3 text-navy-foreground">
         <div className="flex items-center gap-2">
-          {back ? (
+          {back && (
             <button
               onClick={() => router.history.back()}
               aria-label="Volver a la pantalla anterior"
               className="grid h-11 w-11 place-items-center rounded-md hover:bg-white/10"
             >
               <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-            </button>
-          ) : (
-            <button
-              onClick={() => setOpen(true)}
-              aria-label="Abrir menú de navegación"
-              aria-expanded={open}
-              aria-controls="main-drawer"
-              className="grid h-11 w-11 place-items-center rounded-md hover:bg-white/10 lg:hidden"
-            >
-              <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
           )}
           <Link
