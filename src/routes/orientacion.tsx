@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { speak, stopSpeaking } from "@/lib/speech";
-import { MapaRecorridoCanvas } from "@/components/MapaRecorridoCanvas";
+import { MapaRecorridoLive } from "@/components/MapaRecorridoLive";
 
 export const Route = createFileRoute("/orientacion")({
   head: () => ({
@@ -266,11 +266,17 @@ function NavegacionTab() {
     if (nodosRef.current.length === 0) return;
     const actual = ultimoNodoRef.current;
     const idx = actual == null ? 0 : nodosRef.current.findIndex((n) => n.id === actual);
+    const desde = nodosRef.current[idx >= 0 ? idx : 0];
     const siguiente = nodosRef.current[(idx + 1) % nodosRef.current.length];
-    setPosicion({ lat: siguiente.lat, lng: siguiente.lng, accuracy: 1 });
-    // Forzar anuncio del siguiente nodo
-    ultimoNodoRef.current = null;
-    evaluarPosicion(siguiente.lat, siguiente.lng);
+    // Paso intermedio para que la figura no teleporte
+    const midLat = (desde.lat + siguiente.lat) / 2;
+    const midLng = (desde.lng + siguiente.lng) / 2;
+    setPosicion({ lat: midLat, lng: midLng, accuracy: 1 });
+    window.setTimeout(() => {
+      setPosicion({ lat: siguiente.lat, lng: siguiente.lng, accuracy: 1 });
+      ultimoNodoRef.current = null;
+      evaluarPosicion(siguiente.lat, siguiente.lng);
+    }, 400);
   }
 
   return (
@@ -298,7 +304,12 @@ function NavegacionTab() {
         nodos={nodos}
         posicionActual={posicion}
         nodoActivoId={nodoActivoId}
+        modoSimulacion={simular}
       />
+
+      <GpsBadge posicion={posicion} activo={activo} simular={simular} />
+
+
 
 
       {error && (
@@ -387,27 +398,6 @@ function NavegacionTab() {
         )}
       </section>
 
-      <section aria-labelledby="lista-nodos-nav" className="rounded-lg border border-border p-4">
-        <h3 id="lista-nodos-nav" className="text-lg font-semibold">
-          Nodos cargados ({nodos.length})
-        </h3>
-        {nodos.length === 0 ? (
-          <p className="mt-2 text-base text-muted-foreground">
-            No hay nodos. Ve al Administrador para crear puntos de referencia.
-          </p>
-        ) : (
-          <ul className="mt-2 divide-y divide-border">
-            {nodos.map((n) => (
-              <li key={n.id} className="py-2">
-                <p className="font-semibold">{n.nombre}</p>
-                <p className="text-sm text-muted-foreground">
-                  {n.lat.toFixed(6)}, {n.lng.toFixed(6)} · ±{n.accuracy.toFixed(1)} m
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
   );
 }
@@ -704,26 +694,27 @@ function ProgresoYMapa({
   nodos,
   posicionActual,
   nodoActivoId,
+  modoSimulacion,
 }: {
   nodos: Nodo[];
   posicionActual: { lat: number; lng: number; accuracy: number } | null;
   nodoActivoId: number | null;
+  modoSimulacion: boolean;
 }) {
   const activeIdx = nodoActivoId == null ? -1 : nodos.findIndex((n) => n.id === nodoActivoId);
   const total = nodos.length;
   const activeNodo = activeIdx >= 0 ? nodos[activeIdx] : null;
 
-  const distTotalRestante = useMemo(() => {
+  const distTotal = useMemo(() => {
     if (total < 2) return 0;
-    const desde = activeIdx >= 0 ? activeIdx : 0;
     let sum = 0;
-    for (let i = desde; i < total - 1; i++) {
+    for (let i = 0; i < total - 1; i++) {
       sum += haversineMeters(nodos[i].lat, nodos[i].lng, nodos[i + 1].lat, nodos[i + 1].lng);
     }
     return sum;
-  }, [nodos, activeIdx, total]);
+  }, [nodos, total]);
 
-  const minutosRestantes = Math.max(0, Math.round(distTotalRestante / 0.8 / 60));
+  const minutosRestantes = Math.max(0, Math.round(distTotal / 0.8 / 60));
   const progreso = total > 1 && activeIdx >= 0 ? activeIdx / (total - 1) : 0;
 
   return (
@@ -734,7 +725,9 @@ function ProgresoYMapa({
             ? `Nodo ${activeIdx + 1} de ${total} — ${activeNodo.nombre}`
             : `Recorrido: ${total} nodos`}
         </p>
-        <p className="text-sm text-muted-foreground">~{minutosRestantes} min restantes</p>
+        <p className="text-sm text-muted-foreground">
+          ~{minutosRestantes} min · {Math.round(distTotal)} m totales
+        </p>
       </div>
       <div
         role="progressbar"
@@ -748,12 +741,52 @@ function ProgresoYMapa({
           style={{ width: `${progreso * 100}%` }}
         />
       </div>
-      <MapaRecorridoCanvas
+      <MapaRecorridoLive
         nodos={nodos}
-        posicionActual={posicionActual}
+        posicion={posicionActual}
         nodoActivoId={nodoActivoId}
+        modoSimulacion={modoSimulacion}
       />
     </section>
   );
 }
+
+function GpsBadge({
+  posicion,
+  activo,
+  simular,
+}: {
+  posicion: { lat: number; lng: number; accuracy: number } | null;
+  activo: boolean;
+  simular: boolean;
+}) {
+  if (!activo || simular) return null;
+  const acc = posicion?.accuracy;
+  let color = "bg-red-500";
+  let label = "GPS débil · Activa el modo simulación";
+  let pulse = false;
+  if (acc != null) {
+    if (acc < 10) {
+      color = "bg-green-500";
+      label = `GPS · Alta precisión ±${acc.toFixed(1)}m`;
+      pulse = true;
+    } else if (acc <= 30) {
+      color = "bg-yellow-500";
+      label = `GPS · Precisión media ±${acc.toFixed(1)}m`;
+    } else {
+      color = "bg-red-500";
+      label = `GPS débil ±${acc.toFixed(1)}m · Activa el modo simulación`;
+    }
+  }
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground"
+    >
+      <span className={`inline-block h-2.5 w-2.5 rounded-full ${color} ${pulse ? "animate-pulse" : ""}`} aria-hidden="true" />
+      <span>{label}</span>
+    </div>
+  );
+}
+
 
