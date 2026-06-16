@@ -9,7 +9,7 @@ import {
   Square,
   Map,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, type MutableRefObject } from "react";
 import { AppShell } from "@/components/app-shell";
 import { EmergencyBar } from "@/components/emergency-bar";
 import { getRecognition, stopSpeaking } from "@/lib/speech";
@@ -30,8 +30,36 @@ const tiles = [
 ] as const;
 
 type Tile = (typeof tiles)[number];
+type VoiceStatus = "idle" | "reading" | "listening";
+type RecognitionResultLike = { 0: { transcript: string } };
+type RecognitionEventLike = { results: ArrayLike<RecognitionResultLike> };
+type RecognitionErrorLike = { error?: string };
+type RecognitionLike = {
+  onresult: ((event: RecognitionEventLike) => void) | null;
+  onerror: ((event: RecognitionErrorLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop?: () => void;
+  abort?: () => void;
+};
 
-function speakSequence(parts: string[], onDone: () => void, cancelRef: React.MutableRefObject<boolean>) {
+function stopRecognition(rec: RecognitionLike | null) {
+  if (!rec) return;
+  try {
+    rec.onresult = null;
+    rec.onend = null;
+    rec.onerror = null;
+    rec.abort?.();
+    rec.stop?.();
+  } catch { /* ignore */ }
+}
+
+function stopVoiceOutput() {
+  try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+  stopSpeaking();
+}
+
+function speakSequence(parts: string[], onDone: () => void, cancelRef: MutableRefObject<boolean>) {
   if (!("speechSynthesis" in window)) {
     onDone();
     return;
@@ -90,41 +118,46 @@ function matchTile(transcript: string): Tile | null {
 
 function Home() {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"idle" | "reading" | "listening">("idle");
+  const [status, setStatus] = useState<VoiceStatus>("idle");
   const [feedback, setFeedback] = useState<string>("");
-  const recRef = useRef<any>(null);
+  const recRef = useRef<RecognitionLike | null>(null);
   const cancelTTSRef = useRef<boolean>(false);
 
-  function startListening() {
-    // Detiene cualquier TTS en curso para que el micrófono no capture al narrador.
-    try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
-    stopSpeaking();
+  function startListening(options?: { status?: Exclude<VoiceStatus, "idle">; feedback?: string; cancelSpeech?: boolean }) {
+    stopRecognition(recRef.current);
+    recRef.current = null;
+
+    if (options?.cancelSpeech !== false) {
+      cancelTTSRef.current = true;
+      stopVoiceOutput();
+    }
 
     // interim=true + continuous=true: evalúa el texto conforme el usuario habla
     // para disparar la acción al instante, sin esperar a que termine la frase.
-    const rec = getRecognition({ interim: true, continuous: true });
+    const rec = getRecognition({ interim: true, continuous: true }) as RecognitionLike | null;
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       setStatus("idle");
-      return;
+      return false;
     }
 
-    setStatus("listening");
-    setFeedback("Escuchando… di un número (uno a seis) o el nombre.");
+    setStatus(options?.status ?? "listening");
+    setFeedback(options?.feedback ?? "Escuchando… di un número (uno a seis) o el nombre.");
     let decided = false;
 
     const fire = (tile: Tile) => {
       if (decided) return;
       decided = true;
+      cancelTTSRef.current = true;
       setFeedback(`Abriendo: ${tile.spoken}`);
-      try { rec.onresult = null; rec.onend = null; rec.onerror = null; } catch { /* ignore */ }
-      try { rec.abort(); } catch { /* ignore */ }
-      try { rec.stop(); } catch { /* ignore */ }
+      stopVoiceOutput();
+      stopRecognition(rec);
+      recRef.current = null;
       setStatus("idle");
       navigate({ to: tile.to });
     };
 
-    rec.onresult = (e: any) => {
+    rec.onresult = (e) => {
       if (decided) return;
       // Evalúa todos los resultados (intermedios y finales) en tiempo real.
       let combined = "";
@@ -137,7 +170,7 @@ function Home() {
       const tile = matchTile(transcript);
       if (tile) fire(tile);
     };
-    rec.onerror = (e: any) => {
+    rec.onerror = (e) => {
       if (decided) return;
       if (e?.error === "no-speech") {
         setFeedback("No te escuché. Vuelve a pulsar el botón e inténtalo de nuevo.");
@@ -146,19 +179,24 @@ function Home() {
       } else if (e?.error !== "aborted") {
         setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
       }
+      recRef.current = null;
       setStatus("idle");
     };
     rec.onend = () => {
       if (decided) return;
-      setStatus((s) => (s === "listening" ? "idle" : s));
+      recRef.current = null;
+      setStatus((s) => (s === "listening" || s === "reading" ? "idle" : s));
     };
     recRef.current = rec;
     try {
       rec.start();
+      return true;
     } catch (err) {
       console.error("rec.start failed", err);
+      recRef.current = null;
       setStatus("idle");
       setFeedback("No pude iniciar el micrófono. Intenta de nuevo.");
+      return false;
     }
   }
 
@@ -171,30 +209,37 @@ function Home() {
     // Si está leyendo: interrumpir TTS e ir directo a escuchar (gesto del usuario).
     if (status === "reading") {
       cancelTTSRef.current = true;
-      setFeedback("Interrumpido. Escuchando tu elección…");
-      startListening();
+      stopVoiceOutput();
+      startListening({ feedback: "Interrumpido. Escuchando tu elección…", cancelSpeech: false });
       return;
     }
 
     // Si está escuchando: detener todo.
     if (status === "listening") {
-      try { recRef.current?.stop?.(); } catch { /* ignore */ }
-      stopSpeaking();
+      stopRecognition(recRef.current);
+      recRef.current = null;
+      stopVoiceOutput();
       setStatus("idle");
       setFeedback("");
       return;
     }
 
-    setStatus("reading");
-    setFeedback("Leyendo opciones disponibles… Toca de nuevo para interrumpir y hablar.");
-
     const intro = "Estas son las opciones disponibles. Di el número o el nombre de la que deseas abrir.";
     const numbered = tiles.map((t, i) => `Opción ${i + 1}: ${t.spoken}.`);
     const outro = "Ahora dime tu elección.";
 
+    const started = startListening({
+      status: "reading",
+      feedback: "Leyendo opciones disponibles… también puedes decir una opción ahora.",
+      cancelSpeech: false,
+    });
+    if (!started) return;
+
     speakSequence([intro, ...numbered, outro], () => {
-      // Tras leer el menú, abre el micrófono automáticamente.
-      startListening();
+      // El micrófono ya está activo desde el inicio; al terminar solo cambia el estado visual.
+      if (!getVoiceEnabled()) { setStatus("idle"); return; }
+      setStatus((s) => (s === "reading" ? "listening" : s));
+      setFeedback((current) => current.startsWith("Abriendo:") ? current : "Escuchando… di un número (uno a seis) o el nombre.");
     }, cancelTTSRef);
   }
 

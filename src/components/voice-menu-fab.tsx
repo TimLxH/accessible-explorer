@@ -9,6 +9,17 @@ type Tile = {
   spoken: string;
   keywords: string[];
 };
+type RecognitionResultLike = { 0: { transcript: string } };
+type RecognitionEventLike = { results: ArrayLike<RecognitionResultLike> };
+type RecognitionErrorLike = { error?: string };
+type RecognitionLike = {
+  onresult: ((event: RecognitionEventLike) => void) | null;
+  onerror: ((event: RecognitionErrorLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop?: () => void;
+  abort?: () => void;
+};
 
 const tiles: Tile[] = [
   { to: "/explorar", spoken: "Búsqueda de destino", keywords: ["búsqueda", "busqueda", "destino", "explorar", "buscar"] },
@@ -56,18 +67,32 @@ function speakSequence(parts: string[], onDone: () => void) {
   next();
 }
 
+function stopRecognition(rec: RecognitionLike | null) {
+  if (!rec) return;
+  try {
+    rec.onresult = null;
+    rec.onend = null;
+    rec.onerror = null;
+    rec.abort?.();
+    rec.stop?.();
+  } catch { /* ignore */ }
+}
+
 export function VoiceMenuFab() {
   const navigate = useNavigate();
   const [enabled] = useVoiceEnabled();
   const [status, setStatus] = useState<"idle" | "reading" | "listening">("idle");
   const [feedback, setFeedback] = useState("");
-  const recRef = useRef<any>(null);
+  const recRef = useRef<RecognitionLike | null>(null);
+  const recStartedRef = useRef(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Cancel any active session when voice is disabled or route changes.
   useEffect(() => {
     if (!enabled && status !== "idle") {
-      try { recRef.current?.stop?.(); } catch { /* ignore */ }
+      stopRecognition(recRef.current);
+      recRef.current = null;
+      recStartedRef.current = false;
       stopSpeaking();
       setStatus("idle");
       setFeedback("");
@@ -76,7 +101,9 @@ export function VoiceMenuFab() {
 
   useEffect(() => {
     if (status !== "idle") {
-      try { recRef.current?.stop?.(); } catch { /* ignore */ }
+      stopRecognition(recRef.current);
+      recRef.current = null;
+      recStartedRef.current = false;
       stopSpeaking();
       setStatus("idle");
       setFeedback("");
@@ -88,54 +115,87 @@ export function VoiceMenuFab() {
   // Hide on landing/auth pages to avoid clutter.
   if (pathname === "/" || pathname === "/login" || pathname === "/register") return null;
 
+  function listenNow(rec: RecognitionLike) {
+    if (recStartedRef.current) return;
+    recStartedRef.current = true;
+    setStatus("listening");
+    setFeedback("Escuchando…");
+    let decided = false;
+
+    const fire = (tile: Tile) => {
+      if (decided) return;
+      decided = true;
+      setFeedback(`Abriendo: ${tile.spoken}`);
+      stopSpeaking();
+      stopRecognition(rec);
+      recRef.current = null;
+      recStartedRef.current = false;
+      setStatus("idle");
+      navigate({ to: tile.to });
+    };
+
+    rec.onresult = (e) => {
+      if (decided) return;
+      let combined = "";
+      for (let i = 0; i < e.results.length; i += 1) {
+        combined += `${e.results[i][0].transcript} `;
+      }
+      const transcript = combined.trim();
+      if (transcript) setFeedback(`Te escuché: "${transcript}"`);
+      const tile = matchTile(transcript);
+      if (tile) fire(tile);
+    };
+    rec.onerror = (e) => {
+      if (decided) return;
+      if (e?.error === "no-speech") setFeedback("No te escuché. Intenta de nuevo.");
+      else if (e?.error === "not-allowed") setFeedback("Permiso de micrófono denegado.");
+      else if (e?.error !== "aborted") setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
+      recRef.current = null;
+      recStartedRef.current = false;
+      setStatus("idle");
+    };
+    rec.onend = () => {
+      if (decided) return;
+      recRef.current = null;
+      recStartedRef.current = false;
+      setStatus("idle");
+    };
+    try { rec.start(); } catch { recStartedRef.current = false; setStatus("idle"); setFeedback("No pude iniciar el micrófono."); }
+  }
+
   function start() {
     if (!getVoiceEnabled()) return;
-    if (status !== "idle") {
+    if (status === "reading") {
       stopSpeaking();
-      try { recRef.current?.stop?.(); } catch { /* ignore */ }
+      setFeedback("Interrumpido. Escuchando tu elección…");
+      const rec = recRef.current;
+      if (rec) listenNow(rec);
+      else setStatus("idle");
+      return;
+    }
+    if (status === "listening") {
+      stopSpeaking();
+      stopRecognition(recRef.current);
+      recRef.current = null;
+      recStartedRef.current = false;
       setStatus("idle");
       setFeedback("");
       return;
     }
-    const rec = getRecognition({ interim: true, continuous: true });
+    const rec = getRecognition({ interim: true, continuous: true }) as RecognitionLike | null;
     if (!rec) {
       setFeedback("Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.");
       return;
     }
+    recRef.current = rec;
+    recStartedRef.current = false;
     setStatus("reading");
     setFeedback("Leyendo opciones…");
     const intro = "Opciones disponibles. Di el número o el nombre.";
     const numbered = tiles.map((t, i) => `${i + 1}: ${t.spoken}.`);
     speakSequence([intro, ...numbered, "Te escucho."], () => {
       if (!getVoiceEnabled()) { setStatus("idle"); return; }
-      setStatus("listening");
-      setFeedback("Escuchando…");
-      let decided = false;
-      rec.onresult = (e: any) => {
-        let combined = "";
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          combined += e.results[i][0].transcript + " ";
-        }
-        const transcript = combined.trim();
-        if (transcript) setFeedback(`Te escuché: "${transcript}"`);
-        const tile = matchTile(transcript);
-        if (tile && !decided) {
-          decided = true;
-          setFeedback(`Abriendo: ${tile.spoken}`);
-          try { rec.stop(); } catch { /* ignore */ }
-          speakSequence([`Abriendo ${tile.spoken}`], () => {});
-          navigate({ to: tile.to });
-        }
-      };
-      rec.onerror = (e: any) => {
-        if (e?.error === "no-speech") setFeedback("No te escuché. Intenta de nuevo.");
-        else if (e?.error === "not-allowed") setFeedback("Permiso de micrófono denegado.");
-        else setFeedback(`Error de voz: ${e?.error ?? "desconocido"}`);
-        setStatus("idle");
-      };
-      rec.onend = () => setStatus("idle");
-      recRef.current = rec;
-      try { rec.start(); } catch { setStatus("idle"); setFeedback("No pude iniciar el micrófono."); }
+      listenNow(rec);
     });
   }
 
