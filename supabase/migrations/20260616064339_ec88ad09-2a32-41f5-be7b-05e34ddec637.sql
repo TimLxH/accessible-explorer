@@ -1,0 +1,1 @@
+UPDATE lugares SET image = '/__l5e/assets-v1/e8261f4d-3804-407c-a56c-061ec3c1c9e8/convento-ocopa.jpg' WHERE id = 'dest-06';
