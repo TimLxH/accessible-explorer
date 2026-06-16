@@ -26,7 +26,8 @@ function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      setError(error.message);
+      console.error("[login] signInWithPassword", error);
+      setError("Correo o contraseña incorrectos. Por favor verifica tus datos.");
       return;
     }
     nav({ to: "/home" });
