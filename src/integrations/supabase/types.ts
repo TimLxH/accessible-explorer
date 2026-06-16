@@ -204,13 +204,6 @@ export type Database = {
             referencedRelation: "resenas"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "resena_reacciones_resena_id_fkey"
-            columns: ["resena_id"]
-            isOneToOne: false
-            referencedRelation: "resenas_publicas"
-            referencedColumns: ["id"]
-          },
         ]
       }
       resena_respuestas: {
@@ -247,13 +240,6 @@ export type Database = {
             columns: ["resena_id"]
             isOneToOne: false
             referencedRelation: "resenas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "resena_respuestas_resena_id_fkey"
-            columns: ["resena_id"]
-            isOneToOne: false
-            referencedRelation: "resenas_publicas"
             referencedColumns: ["id"]
           },
         ]
@@ -293,126 +279,44 @@ export type Database = {
       }
     }
     Views: {
-      resena_reacciones_publicas: {
-        Row: {
-          created_at: string | null
-          es_mia: boolean | null
-          id: string | null
-          resena_id: string | null
-          tipo: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          es_mia?: never
-          id?: string | null
-          resena_id?: string | null
-          tipo?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          es_mia?: never
-          id?: string | null
-          resena_id?: string | null
-          tipo?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "resena_reacciones_resena_id_fkey"
-            columns: ["resena_id"]
-            isOneToOne: false
-            referencedRelation: "resenas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "resena_reacciones_resena_id_fkey"
-            columns: ["resena_id"]
-            isOneToOne: false
-            referencedRelation: "resenas_publicas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      resena_respuestas_publicas: {
-        Row: {
-          autor: string | null
-          comentario: string | null
-          created_at: string | null
-          es_mia: boolean | null
-          id: string | null
-          resena_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          autor?: string | null
-          comentario?: string | null
-          created_at?: string | null
-          es_mia?: never
-          id?: string | null
-          resena_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          autor?: string | null
-          comentario?: string | null
-          created_at?: string | null
-          es_mia?: never
-          id?: string | null
-          resena_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "resena_respuestas_resena_id_fkey"
-            columns: ["resena_id"]
-            isOneToOne: false
-            referencedRelation: "resenas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "resena_respuestas_resena_id_fkey"
-            columns: ["resena_id"]
-            isOneToOne: false
-            referencedRelation: "resenas_publicas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      resenas_publicas: {
-        Row: {
-          autor: string | null
-          calificacion: number | null
-          comentario: string | null
-          created_at: string | null
-          es_mia: boolean | null
-          id: string | null
-          lugar_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          autor?: string | null
-          calificacion?: number | null
-          comentario?: string | null
-          created_at?: string | null
-          es_mia?: never
-          id?: string | null
-          lugar_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          autor?: string | null
-          calificacion?: number | null
-          comentario?: string | null
-          created_at?: string | null
-          es_mia?: never
-          id?: string | null
-          lugar_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_resena_reacciones_publicas: {
+        Args: { p_resena_ids: string[] }
+        Returns: {
+          created_at: string
+          es_mia: boolean
+          id: string
+          resena_id: string
+          tipo: string
+        }[]
+      }
+      get_resena_respuestas_publicas: {
+        Args: { p_resena_ids: string[] }
+        Returns: {
+          autor: string
+          comentario: string
+          created_at: string
+          es_mia: boolean
+          id: string
+          resena_id: string
+          updated_at: string
+        }[]
+      }
+      get_resenas_publicas: {
+        Args: { p_lugar_id: string }
+        Returns: {
+          autor: string
+          calificacion: number
+          comentario: string
+          created_at: string
+          es_mia: boolean
+          id: string
+          lugar_id: string
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
