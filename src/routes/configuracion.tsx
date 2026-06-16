@@ -57,12 +57,22 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Config() {
+  const navigate = useNavigate();
   const [voiceCommands, setVoiceCommands] = useVoiceEnabled();
   const [voiceRate, setVoiceRate] = useVoiceRate();
   const [voice, setVoice] = useState(true);
   const [highContrast, setHighContrast] = useState(false);
   const [vibration, setVibration] = useState(true);
   const [volume, setVolume] = useState(70);
+
+  async function handleLogout() {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("signOut error", err);
+    }
+    navigate({ to: "/" });
+  }
 
   return (
     <AppShell title="Configuración" back>
