@@ -107,7 +107,10 @@ export function ResenasSection({
           setCalificacion(5);
           speak("Reseña publicada. Gracias por compartir tu experiencia.");
         },
-        onError: (err) => setError((err as Error).message),
+        onError: (err) => {
+          console.error("[resenas-section] crear resena", err);
+          setError("No se pudo publicar la reseña. Por favor intenta de nuevo.");
+        },
       },
     );
   }
