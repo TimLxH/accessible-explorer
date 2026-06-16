@@ -9,6 +9,17 @@ type Tile = {
   spoken: string;
   keywords: string[];
 };
+type RecognitionResultLike = { 0: { transcript: string } };
+type RecognitionEventLike = { results: ArrayLike<RecognitionResultLike> };
+type RecognitionErrorLike = { error?: string };
+type RecognitionLike = {
+  onresult: ((event: RecognitionEventLike) => void) | null;
+  onerror: ((event: RecognitionErrorLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop?: () => void;
+  abort?: () => void;
+};
 
 const tiles: Tile[] = [
   { to: "/explorar", spoken: "Búsqueda de destino", keywords: ["búsqueda", "busqueda", "destino", "explorar", "buscar"] },
@@ -56,18 +67,30 @@ function speakSequence(parts: string[], onDone: () => void) {
   next();
 }
 
+function stopRecognition(rec: RecognitionLike | null) {
+  if (!rec) return;
+  try {
+    rec.onresult = null;
+    rec.onend = null;
+    rec.onerror = null;
+    rec.abort?.();
+    rec.stop?.();
+  } catch { /* ignore */ }
+}
+
 export function VoiceMenuFab() {
   const navigate = useNavigate();
   const [enabled] = useVoiceEnabled();
   const [status, setStatus] = useState<"idle" | "reading" | "listening">("idle");
   const [feedback, setFeedback] = useState("");
-  const recRef = useRef<any>(null);
+  const recRef = useRef<RecognitionLike | null>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // Cancel any active session when voice is disabled or route changes.
   useEffect(() => {
     if (!enabled && status !== "idle") {
-      try { recRef.current?.stop?.(); } catch { /* ignore */ }
+      stopRecognition(recRef.current);
+      recRef.current = null;
       stopSpeaking();
       setStatus("idle");
       setFeedback("");
@@ -76,7 +99,8 @@ export function VoiceMenuFab() {
 
   useEffect(() => {
     if (status !== "idle") {
-      try { recRef.current?.stop?.(); } catch { /* ignore */ }
+      stopRecognition(recRef.current);
+      recRef.current = null;
       stopSpeaking();
       setStatus("idle");
       setFeedback("");
