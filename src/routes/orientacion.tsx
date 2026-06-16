@@ -266,11 +266,17 @@ function NavegacionTab() {
     if (nodosRef.current.length === 0) return;
     const actual = ultimoNodoRef.current;
     const idx = actual == null ? 0 : nodosRef.current.findIndex((n) => n.id === actual);
+    const desde = nodosRef.current[idx >= 0 ? idx : 0];
     const siguiente = nodosRef.current[(idx + 1) % nodosRef.current.length];
-    setPosicion({ lat: siguiente.lat, lng: siguiente.lng, accuracy: 1 });
-    // Forzar anuncio del siguiente nodo
-    ultimoNodoRef.current = null;
-    evaluarPosicion(siguiente.lat, siguiente.lng);
+    // Paso intermedio para que la figura no teleporte
+    const midLat = (desde.lat + siguiente.lat) / 2;
+    const midLng = (desde.lng + siguiente.lng) / 2;
+    setPosicion({ lat: midLat, lng: midLng, accuracy: 1 });
+    window.setTimeout(() => {
+      setPosicion({ lat: siguiente.lat, lng: siguiente.lng, accuracy: 1 });
+      ultimoNodoRef.current = null;
+      evaluarPosicion(siguiente.lat, siguiente.lng);
+    }, 400);
   }
 
   return (
